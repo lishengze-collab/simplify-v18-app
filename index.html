@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Simplify, simplify (V18.2)</title>
+    
+    <style>
+        :root {
+            /* Apple Color Palette */
+            --bg-color: #F2F2F7;
+            --card-bg: rgba(255, 255, 255, 0.92);
+            --primary-blue: #007AFF;
+            --primary-light-blue: #5AC8FA;
+            --success-green: #34C759;
+            --warning-orange: #FF9500;
+            --danger-red: #FF3B30;
+            --text-primary: #000000;
+            --text-secondary: #8E8E93;
+            --border-color: rgba(60, 60, 67, 0.18);
+            
+            /* Dimensions */
+            --gap-std: 16px;
+            --card-radius: 20px;
+            --btn-radius: 16px;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+            outline: none;
+            user-select: none;
+        }
+        input { user-select: auto; }
+        
+        body {
+            font-size: 15px; 
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px 12px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap-std);
+            padding-bottom: 40px;
+        }
+
+        /* --- Header: Simplified --- */
+        .app-header { text-align: center; margin-bottom: 5px; }
+        .app-title {
+            font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; margin: 0;
+        }
+        .tenure-badge {
+            display: inline-block;
+            background: none; 
+            color: var(--text-secondary); 
+            padding: 4px 0;
+            border-radius: 20px;
+            font-size: 1.1rem; 
+            font-weight: 700;
+            margin-top: 10px;
+        }
+
+        /* --- Card Style --- */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border-radius: var(--card-radius);
+            padding: 18px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+        .card h2 {
+            font-size: 1.1rem; font-weight: 700; margin: 0 0 12px 0;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* --- Buttons (Using V9 + Style) --- */
+        button {
+            border: none; cursor: pointer;
+            font-size: 1rem; font-weight: 600;
+            transition: transform 0.1s;
+        }
+        button:active { transform: scale(0.96); opacity: 0.8; }
+        
+        .btn-add-todo { 
+            background: none; color: var(--primary-blue); 
+            font-size: 1.5rem; padding: 0 8px; line-height: 1;
+        }
+
+        /* --- 1. Clock Section (Retained) --- */
+        .time-display {
+            display: flex; justify-content: space-between;
+            padding-bottom: 15px; margin-bottom: 15px;
+            border-bottom: 0.5px solid var(--border-color);
+        }
+        .time-zone { text-align: center; flex: 1; }
+        .time-zone:first-child { border-right: 0.5px solid var(--border-color); }
+        .time-label { font-size: 0.7rem; color: var(--text-secondary); font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px;}
+        .time-value { font-size: 1.4rem; font-weight: 700; margin: 0; font-variant-numeric: tabular-nums; color: var(--text-primary); }
+        .date-value { font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; margin-top: 2px; }
+
+        .punch-controls { display: flex; gap: 12px; margin-top: 10px; }
+        .punch-btn {
+            flex: 1; padding: 14px 0; border-radius: var(--btn-radius);
+            color: white; font-size: 1rem; letter-spacing: 0.3px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .btn-in { background: var(--primary-blue); }
+        .btn-out { background: var(--danger-red); }
+        
+        .status-text {
+            text-align: center; font-size: 0.85rem; margin-top: 12px;
+            color: var(--text-secondary); font-weight: 500;
+        }
+        .status-highlight { color: var(--text-primary); font-weight: 600; }
+
+        /* --- Mood Section (Retained) --- */
+        .mood-controls { display: flex; justify-content: space-around; padding: 10px 0; }
+        .mood-emoji {
+            font-size: 2.2rem;
+            cursor: pointer;
+            transition: opacity 0.3s;
+            background: none;
+            padding: 5px;
+            border-radius: 10px;
+        }
+        .mood-emoji:active { transform: scale(0.85); opacity: 0.9; }
+
+        .mood-history-list {
+            list-style: none; padding: 10px 0 0; margin: 10px 0 0;
+            border-top: 0.5px solid var(--border-color);
+            font-size: 0.9rem; color: var(--text-secondary);
+            max-height: 80px; overflow-y: auto;
+        }
+        .mood-history-item { 
+            padding: 4px 0; 
+            display: flex; justify-content: space-between; 
+            align-items: center;
+        }
+
+        /* --- Summary Section (Retained) --- */
+        .stats-row { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 8px; }
+        .val { font-weight: 600; font-variant-numeric: tabular-nums; }
+        
+        .progress-track {
+            height: 10px; background: #E5E5EA; border-radius: 10px;
+            margin: 14px 0; overflow: hidden; display: flex;
+        }
+        .bar-work { background: var(--primary-blue); height: 100%; transition: width 0.3s; }
+        .bar-break { background: var(--primary-light-blue); height: 100%; transition: width 0.3s; }
+        
+        .break-btn { 
+            width: 100%; padding: 12px; border-radius: var(--btn-radius); color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .btn-break-start { background: var(--success-green); }
+        .btn-break-end { background: var(--warning-orange); }
+
+        /* --- Dashboard (Calendar + Todo) --- */
+        .dashboard-container { display: flex; gap: 12px; }
+        .dash-panel { flex: 1; display: flex; flex-direction: column; }
+        .dash-divider { width: 1px; background: var(--border-color); margin: 0 4px; }
+
+        /* Calendar (V12 Styles) */
+        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 4px; }
+        .month-title { font-weight: 700; font-size: 0.9rem; }
+        .cal-nav-btn { color: var(--primary-blue); font-size: 1.1rem; padding: 0 5px; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 6px; text-align: center; }
+        .day-cell {
+            width: 26px; height: 26px; line-height: 26px; margin: 0 auto;
+            font-size: 0.75rem; border-radius: 50%; position: relative;
+        }
+        .day-cell.today { background: var(--danger-red); color: white; font-weight: 600; }
+        .day-cell.past { color: #C7C7CC; } 
+        .day-cell.has-punch::after {
+            content: ''; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
+            width: 4px; height: 4px; background: var(--text-primary); 
+            border-radius: 50%;
+        }
+        .day-cell.holiday { color: var(--danger-red); font-weight: 700; }
+        .day-cell.today.holiday { background: var(--danger-red); color: white; font-weight: 700; }
+
+
+        /* Todo (V12 Styles) */
+        .todo-header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            font-size: 1rem; font-weight: 700; margin-bottom: 10px;
+        }
+        #todoList { list-style: none; padding: 0; margin: 0; height: 160px; overflow-y: auto; }
+        .todo-item {
+            display: flex; align-items: flex-start; padding: 10px 0;
+            border-bottom: 0.5px solid var(--border-color);
+            animation: fadeIn 0.3s ease;
+        }
+        .todo-checkbox {
+            appearance: none; -webkit-appearance: none;
+            width: 20px; height: 20px; border: 1.5px solid #C7C7CC;
+            border-radius: 50%; margin-right: 10px; flex-shrink: 0; position: relative;
+        }
+        .todo-checkbox:checked { background: var(--text-secondary); border-color: transparent; }
+        .todo-checkbox:checked::after {
+            content: '✓'; color: white; font-size: 12px; position: absolute; 
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+        }
+        .todo-text { font-size: 0.9rem; line-height: 1.4; color: var(--text-primary); }
+        .todo-item.completed .todo-text { 
+            text-decoration: line-through; 
+            color: var(--text-secondary); 
+            transition: color 0.3s, text-decoration 0.3s;
+        }
+
+        /* --- Cumulative Stats (Restored V9 Style) --- */
+        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 0.5px solid var(--border-color); font-size: 0.9rem; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: var(--text-secondary); }
+
+        /* --- Punch History (Retained) --- */
+        .history-list { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; }
+        .history-item { padding: 10px 0; border-bottom: 0.5px solid var(--border-color); font-size: 0.85rem; }
+        .history-date { font-weight: 600; display: block; margin-bottom: 4px; }
+        .history-detail { color: var(--text-secondary); display: flex; justify-content: space-between; }
+        
+        /* --- Timer (Restored V9 Style) --- */
+        .timer-display { font-size: 2rem; font-weight: 300; margin: 10px 0; font-variant-numeric: tabular-nums; }
+        .timer-btn-group button { padding: 8px 16px; margin: 0 5px; border-radius: 20px; font-size: 0.85rem; color: white; }
+
+        /* --- Admin (Retained) --- */
+        .admin-section { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+        .admin-btn { 
+            width: 100%; padding: 12px; border-radius: var(--btn-radius); 
+            font-size: 0.9rem; font-weight: 600; 
+            background: #E5E5EA; color: var(--text-primary);
+        }
+        .admin-btn.danger { background: rgba(255, 59, 48, 0.1); color: var(--danger-red); }
+
+        /* --- Modals (Retained V9 Style) --- */
+        .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); z-index: 3000; backdrop-filter: blur(5px); align-items: center; justify-content: center; }
+        .modal-content { 
+            background: rgba(255, 255, 255, 0.95); 
+            width: 280px; 
+            border-radius: 14px; 
+            backdrop-filter: blur(20px); 
+            text-align: center; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2); 
+            animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        .modal-title { padding: 15px; font-weight: 600; font-size: 1.1rem; }
+        
+        /* 优化后的输入框样式：缩小宽度，居中 */
+        .modal-input { 
+            width: 80%; 
+            padding: 10px; 
+            margin-bottom: 20px; 
+            border: 1px solid #ccc; 
+            border-radius: 8px; 
+            font-size: 1rem; 
+            text-align: center; 
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .modal-actions { display: flex; border-top: 0.5px solid rgba(60,60,67,0.2); }
+        .modal-btn { flex: 1; background: transparent; padding: 12px; font-size: 1.05rem; color: var(--primary-blue); border-right: 0.5px solid rgba(60,60,67,0.2); }
+        .modal-btn:last-child { border-right: none; font-weight: 600; }
+        
+        /* Punch Modal Specific */
+        #punchListContainer { text-align: left; padding: 0 20px; max-height: 150px; overflow-y: auto; font-size: 0.9rem; margin-bottom: 10px; }
+        .punch-list-item { padding: 5px 0; border-bottom: 0.5px dashed var(--border-color); }
+        .punch-list-item:last-child { border-bottom: none; }
+        #punchDeleteInput { margin-bottom: 10px; }
+        
+        /* New Emoji Modal Specific */
+        #moodModalInput { font-size: 1.5rem; } 
+        .emoji-modal-msg { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 10px; }
+        
+        /* Loading Overlay for Data Fetching */
+        #loadingOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.9); z-index: 5000;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.2rem; font-weight: 600; color: var(--primary-blue);
+        }
+    </style>
+</head>
+<body>
+
+<div id="loadingOverlay" style="display:none;"></div>
+<div id="effectOverlay"></div>
+
+<div class="container" id="mainContainer">
+    
+    <div class="app-header">
+        <h1 class="app-title">Simplify, simplify</h1>
+        <div class="tenure-badge" id="tenureCounter">Day 1322</div>
+    </div>
+
+    <div class="card">
+        <div class="time-display">
+            <div class="time-zone">
+                <div class="time-label">CST (BEIJING)</div>
+                <div class="time-value" id="cstTime">00:00:00</div>
+                <div class="date-value" id="cstDate">--</div>
+            </div>
+            <div class="time-zone">
+                <div class="time-label">EST (NEW YORK)</div>
+                <div class="time-value" id="estTime">00:00:00</div>
+                <div class="date-value" id="estDate">--</div>
+            </div>
+        </div>
+
+        <div class="punch-controls">
+            <button class="punch-btn btn-in" id="btnIn" onclick="handlePunch('in')">Clock In</button>
+            <button class="punch-btn btn-out" id="btnOut" onclick="handlePunch('out')">Clock Out</button>
+        </div>
+
+        <div class="status-text">
+            <span id="statusText" class="status-highlight">--</span> <span id="etaText"></span>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>
+            Daily Mood
+            <button class="btn-add-todo" onclick="openMoodModal()">+</button>
+        </h2>
+        
+        <div class="mood-controls" id="moodControls">
+            </div>
+
+        <ul class="mood-history-list" id="moodHistoryList">
+            <li style="text-align:center; color:var(--text-secondary); opacity:0.7;">No mood recorded yet.</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>Daily Summary</h2>
+        <div class="stats-row">
+            <span style="color:var(--text-secondary)">Work Time</span>
+            <span class="val" style="color:var(--primary-blue)" id="valWork">0h 0m 0s</span>
+        </div>
+        <div class="stats-row">
+            <span style="color:var(--primary-light-blue)">Break Time</span>
+            <span class="val" style="color:var(--primary-light-blue)" id="valBreak">0h 0m 0s</span>
+        </div>
+
+        <div class="progress-track" id="progressTrack"></div>
+
+        <button class="break-btn btn-break-start" id="btnBreak" onclick="handleBreak()">Start Break</button>
+    </div>
+
+    <div class="card" style="text-align: center;">
+        <h2 style="justify-content:center; font-size:0.9rem; color:var(--text-secondary);">Focus Timer</h2>
+        <div class="timer-display" id="timerDisplay">00:00:00</div>
+        <div class="timer-btn-group">
+            <button style="background:var(--success-green)" onclick="startTimer()">Start</button>
+            <button style="background:var(--warning-orange)" onclick="pauseTimer()">Pause</button>
+            <button style="background:var(--danger-red)" onclick="resetTimer()">Reset</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="dashboard-container">
+            <div class="dash-panel" style="flex: 1.2;">
+                <div class="cal-header">
+                    <span class="cal-nav-btn" onclick="moveMonth(-1)">◀</span>
+                    <span class="month-title" id="calTitle">Month</span>
+                    <span class="cal-nav-btn" onclick="moveMonth(1)">▶</span>
+                </div>
+                <div class="cal-grid" style="margin-bottom:4px; font-weight:600;">
+                    <span style="font-size:0.6rem; color:#8E8E93;">S</span><span style="font-size:0.6rem; color:#8E8E93;">M</span><span style="font-size:0.6rem; color:#8E8E93;">T</span><span style="font-size:0.6rem; color:#8E8E93;">W</span><span style="font-size:0.6rem; color:#8E8E93;">T</span><span style="font-size:0.6rem; color:#8E8E93;">F</span><span style="font-size:0.6rem; color:#8E8E93;">S</span>
+                </div>
+                <div class="cal-grid" id="calGrid"></div>
+            </div>
+
+            <div class="dash-divider"></div>
+
+            <div class="dash-panel" style="flex: 1.5;">
+                <div class="todo-header">
+                    <span>To-do List</span>
+                    <button class="btn-add-todo" onclick="openTodoModal()">+</button>
+                </div>
+                <ul id="todoList"></ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Cumulative Stats</h2>
+        <div class="info-row"><span class="info-label">Total Work Days</span><span class="val" id="totalDays">0</span></div>
+        <div class="info-row"><span class="info-label">Total Hours</span><span class="val" id="totalHours">0h 0m</span></div>
+        <div class="info-row"><span class="info-label">Total Breaks</span><span class="val" id="totalBreaks">0</span></div>
+    </div>
+
+    <div class="card">
+        <h2>Punch History (Today)</h2>
+        <ul class="history-list" id="historyList">
+            <li style="text-align:center; color:#8E8E93;">No records yet</li>
+        </ul>
+    </div>
+    
+    <div class="admin-section">
+        <button class="admin-btn" onclick="openPunchModal()">Manage Today's Punches</button>
+        <button class="admin-btn danger" ondblclick="openResetConfirmModal()">Double Tap to Reset Data</button>
+    </div>
+
+</div>
+
+<div id="todoModal" class="modal-backdrop">
+    <div class="modal-content">
+        <div class="modal-title">New Task</div>
+        <input type="text" id="modalInput" class="modal-input" placeholder="What needs to be done?">
+        <div class="modal-actions">
+            <button class="modal-btn" onclick="closeTodoModal()">Cancel</button>
+            <button class="modal-btn" onclick="saveTodoFromModal()">Save</button>
+        </div>
+    </div>
+</div>
+
+<div id="punchModal" class="modal-backdrop">
+    <div class="modal-content">
+        <div class="modal-title">Manage Today's Punches</div>
+        <div id="punchListContainer"></div>
+        <input type="number" id="punchDeleteInput" class="modal-input" placeholder="Enter number to delete (e.g., 2)">
+        <div class="modal-actions">
+            <button class="modal-btn" onclick="closePunchModal()">Cancel</button>
+            <button class="modal-btn" style="color:var(--danger-red); font-weight:600;" onclick="deletePunchFromModal()">Delete</button>
+        </div>
+    </div>
+</div>
+
+<div id="resetConfirmModal" class="modal-backdrop">
+    <div class="modal-content">
+        <div class="modal-title" style="color:var(--danger-red);">!! Delete All Local Data !!</div>
+        <input type="password" id="resetConfirmInput" class="modal-input" placeholder="Enter security code" maxlength="4">
+        <div class="modal-actions">
+            <button class="modal-btn" onclick="closeResetConfirmModal()">Cancel</button>
+            <button class="modal-btn" style="color:var(--danger-red); font-weight:600;" onclick="confirmReset()">Confirm & Delete</button>
+        </div>
+    </div>
+</div>
+
+<div id="moodModal" class="modal-backdrop">
+    <div class="modal-content">
+        <div class="modal-title">Customize Mood Emojis</div>
+        <div class="emoji-modal-msg">Enter three emojis separated by commas (e.g., 😔,🙂,🥳)</div>
+        <input type="text" id="moodModalInput" class="modal-input" placeholder="Enter 3 emojis (separated by commas)">
+        <div class="modal-actions">
+            <button class="modal-btn" onclick="closeMoodModal()">Cancel</button>
+            <button class="modal-btn" onclick="saveMoodEmojis()">Save</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/** * TimeTracker V18.2 Local Secured Edition - Silent Reset Prompt
+ * Data Persistence: localStorage
+ * Change Log:
+ * - Updated version to V18.2
+ * - Restored Reset Data button to 'ondblclick'.
+ * - Removed the textual prompt (emoji-modal-msg) for entering '0000' in the reset modal.
+ * - Kept the '0000' security check logic intact.
+ */
+
+const DATA_KEY = 'timeTracker_V18.2_Data'; // LocalStorage Key is now V18.2
+const START_DATE_TDS = '2022-05-04';
+const WORK_DAY_MS = (8.5 * 60 * 60 * 1000); 
+const HOLIDAYS = ['2025-12-25', '2026-01-01', '2026-01-26'];
+const TODO_LIMIT = 5;
+const RESET_CODE = '0000'; // 安全码
+
+// State
+let appData = { 
+    punches: {}, 
+    breaks: {}, 
+    todos: [], 
+    moods: {}, 
+    customEmojis: ['😢', '😐', '😀'] 
+};
+let timerState = { running: false, ms: 0, interval: null }; // Timer State
+let calDate = new Date();
+let statsInterval = null; 
+
+// --- Core Init ---
+window.onload = function() {
+    loadData(); 
+    updateClock(); 
+    setInterval(updateClock, 1000);
+    initTenure();
+    
+    if (!statsInterval) {
+        calculateStats();
+        statsInterval = setInterval(calculateStats, 1000);
+    }
+};
+
+// --- 1. Local Data Persistence ---
+function loadData() {
+    const raw = localStorage.getItem(DATA_KEY);
+    if (raw) {
+        try {
+            const loaded = JSON.parse(raw);
+            
+            const loadedAppData = {
+                punches: loaded.punches || {},
+                breaks: loaded.breaks || {},
+                todos: loaded.todos || [],
+                moods: loaded.moods || {},
+                customEmojis: loaded.customEmojis || ['😢', '😐', '😀']
+            };
+            
+            appData = { ...appData, ...loadedAppData };
+
+            if (loaded.timerState) {
+                timerState = loaded.timerState;
+                if (timerState.running) {
+                    startTimer(); 
+                }
+            }
+
+        } catch (e) {
+            console.error("Error parsing localStorage data:", e);
+            localStorage.removeItem(DATA_KEY); 
+        }
+    }
+    
+    if (appData.todos.length > 0 && typeof appData.todos[0] === 'string') {
+        appData.todos = appData.todos.map(text => ({ text: text, completed: false }));
+    }
+    if(!Array.isArray(appData.customEmojis) || appData.customEmojis.length !== 3) {
+        appData.customEmojis = ['😢', '😐', '😀'];
+    }
+
+    renderMoodControls();
+    renderTodos();
+    renderCalendar();
+}
+
+function saveData() { 
+    const dataToSave = { 
+        ...appData, 
+        timerState: timerState
+    };
+    // Save data using the V18.2 Key
+    localStorage.setItem(DATA_KEY, JSON.stringify(dataToSave)); 
+}
+
+
+// --- 2. Clock & Tenure (unchanged) ---
+function updateClock() {
+    const now = new Date();
+    const cstOpts = { timeZone: 'Asia/Shanghai', hour12: false, hour:'2-digit', minute:'2-digit', second:'2-digit' };
+    document.getElementById('cstTime').textContent = now.toLocaleTimeString('en-GB', cstOpts);
+    document.getElementById('cstDate').textContent = now.toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai', month:'numeric', day:'numeric' });
+    
+    const estOpts = { timeZone: 'America/New_York', hour12: false, hour:'2-digit', minute:'2-digit', second:'2-digit' };
+    document.getElementById('estTime').textContent = now.toLocaleTimeString('en-GB', estOpts);
+    document.getElementById('estDate').textContent = now.toLocaleDateString('en-US', { timeZone: 'America/New_York', month:'numeric', day:'numeric' });
+}
+
+function initTenure() {
+    const start = new Date(START_DATE_TDS);
+    const diff = Math.floor((new Date() - start) / (1000 * 60 * 60 * 24));
+    document.getElementById('tenureCounter').textContent = `Day ${diff}`;
+}
+
+
+// --- 3. Mood Tracker Logic (unchanged logic) ---
+function renderMoodControls() {
+    const controls = document.getElementById('moodControls');
+    controls.innerHTML = '';
+    
+    appData.customEmojis.forEach((emoji, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'mood-emoji';
+        btn.textContent = emoji;
+        btn.onclick = () => selectMood(emoji, btn);
+        controls.appendChild(btn);
+    });
+    renderMoodHistory();
+}
+
+function selectMood(emoji, selectedBtn) {
+    const key = getEstDateKey();
+    if (!appData.moods[key]) appData.moods[key] = [];
+    appData.moods[key].push({ time: new Date().toISOString(), emoji: emoji });
+    saveData(); 
+    renderMoodHistory();
+
+    document.querySelectorAll('.mood-emoji').forEach(btn => {
+        btn.style.opacity = (btn === selectedBtn) ? 1 : 0.3;
+    });
+    setTimeout(() => {
+        document.querySelectorAll('.mood-emoji').forEach(btn => btn.style.opacity = 1);
+    }, 1000);
+}
+
+function renderMoodHistory() {
+    const list = document.getElementById('moodHistoryList');
+    const key = getEstDateKey();
+    const history = appData.moods[key] || [];
+    
+    if (history.length === 0) {
+        list.innerHTML = '<li style="text-align:center; color:var(--text-secondary); opacity:0.7;">No mood recorded yet.</li>';
+        return;
+    }
+
+    list.innerHTML = history.map(item => {
+        const time = new Date(item.time).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+        return `<li class="mood-history-item"><span>${item.emoji} Mood</span><span>${time}</span></li>`;
+    }).join('');
+}
+
+function openMoodModal() {
+    document.getElementById('moodModal').style.display = 'flex';
+    document.getElementById('moodModalInput').value = appData.customEmojis.join(',');
+    setTimeout(() => document.getElementById('moodModalInput').focus(), 100);
+}
+
+function closeMoodModal() {
+    document.getElementById('moodModal').style.display = 'none';
+}
+
+function saveMoodEmojis() {
+    const input = document.getElementById('moodModalInput').value.trim();
+    const newEmojis = input.split(',').map(e => e.trim()).filter(e => e.length > 0);
+    
+    if (newEmojis.length === 3) {
+        appData.customEmojis = newEmojis;
+        saveData(); 
+        renderMoodControls();
+        closeMoodModal();
+    } else {
+        alert("Please enter exactly three emojis separated by commas.");
+    }
+}
+
+
+// --- 4. Stats & Core Logic (unchanged calculation logic) ---
+function getEstDateKey() { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
+
+function calculateStats() {
+    const key = getEstDateKey();
+    const now = new Date();
+    
+    if (!appData.punches) appData.punches = {};
+    if (!appData.breaks) appData.breaks = {};
+
+    const dayPunches = appData.punches[key] ? appData.punches[key].punches : [];
+    const dayBreaks = appData.breaks[key] || [];
+
+    let breakMs = 0;
+    let isOnBreak = false;
+    dayBreaks.forEach(b => {
+        if(b.end) breakMs += (new Date(b.end) - new Date(b.start));
+        else { isOnBreak = true; breakMs += (now - new Date(b.start)); }
+    });
+
+    let workMs = 0;
+    let lastIn = null;
+    let isClockedIn = false;
+    dayPunches.forEach(p => {
+        if(p.type === 'in') { lastIn = new Date(p.time); isClockedIn = true; }
+        else if(p.type === 'out' && lastIn) { 
+            workMs += (new Date(p.time) - lastIn); 
+            lastIn = null; isClockedIn = false; 
+        }
+    });
+    if(isClockedIn && lastIn) workMs += (now - lastIn);
+    
+    let netWorkMs = Math.max(0, workMs - breakMs);
+
+    document.getElementById('valWork').textContent = formatDur(netWorkMs, true);
+    document.getElementById('valBreak').textContent = formatDur(breakMs, true);
+    
+    updateButtons(isClockedIn, isOnBreak, dayPunches, breakMs);
+    updateProgressBar(netWorkMs, breakMs);
+    updateCumulative(); 
+    renderHistory(dayPunches, dayBreaks);
+}
+
+function updateCumulative() { 
+    let totalDays = 0, totalBreaks = 0;
+    
+    Object.keys(appData.punches).forEach(k => {
+        const dayPunches = appData.punches[k].punches;
+        if(dayPunches && dayPunches.length > 0) totalDays++;
+    });
+
+    Object.keys(appData.breaks).forEach(k => {
+        totalBreaks += (appData.breaks[k] || []).length;
+    });
+    
+    document.getElementById('totalDays').textContent = totalDays;
+    document.getElementById('totalBreaks').textContent = totalBreaks;
+}
+
+function updateButtons(isClockedIn, isOnBreak, dayPunches, breakMs) {
+    const btnIn = document.getElementById('btnIn');
+    const btnOut = document.getElementById('btnOut');
+    const btnBreak = document.getElementById('btnBreak');
+    const statusEl = document.getElementById('statusText');
+    const etaEl = document.getElementById('etaText');
+
+    btnIn.style.opacity = isClockedIn ? 0.4 : 1; btnIn.disabled = isClockedIn;
+    btnOut.style.opacity = (!isClockedIn || isOnBreak) ? 0.4 : 1; btnOut.disabled = !isClockedIn || isOnBreak;
+    btnBreak.style.opacity = !isClockedIn ? 0.4 : 1; btnBreak.disabled = !isClockedIn;
+
+    if (isOnBreak) {
+        statusEl.innerHTML = `<span style="color:var(--warning-orange)">On Break</span>`;
+        btnBreak.innerText = "End Break";
+        btnBreak.className = "break-btn btn-break-end";
+        etaEl.innerHTML = "";
+    } else if (isClockedIn) {
+        statusEl.innerHTML = `<span style="color:var(--success-green)">Working</span>`;
+        btnBreak.innerText = "Start Break";
+        btnBreak.className = "break-btn btn-break-start";
+        
+        const firstIn = dayPunches.find(p => p.type === 'in');
+        if (firstIn) {
+            const now = new Date();
+            let totalWorkMs = dayPunches.reduce((sum, p, i) => {
+                if (p.type === 'in' && dayPunches[i+1] && dayPunches[i+1].type === 'out') {
+                    return sum + (new Date(dayPunches[i+1].time) - new Date(p.time));
+                }
+                if (p.type === 'in' && i === dayPunches.length - 1) {
+                    return sum + (now - new Date(p.time));
+                }
+                return sum;
+            }, 0);
+            
+            totalWorkMs = Math.max(0, totalWorkMs - breakMs);
+            const remainingMs = WORK_DAY_MS - totalWorkMs;
+
+            if (remainingMs > 0) {
+                const etaTime = new Date(now.getTime() + remainingMs + breakMs);
+                const etaStr = etaTime.toLocaleTimeString('en-GB', { timeZone: 'Asia/Shanghai', hour:'2-digit', minute:'2-digit', hour12:false });
+                etaEl.innerHTML = `| ETA: <b>${etaStr} (CST)</b>`;
+            } else {
+                etaEl.innerHTML = `| <b style="color:var(--primary-blue)">Goal Reached!</b>`;
+            }
+        }
+    } else {
+        statusEl.textContent = dayPunches.length > 0 ? "Clocked Out" : "Ready";
+        btnBreak.innerText = "Start Break";
+        btnBreak.className = "break-btn btn-break-start";
+        etaEl.innerHTML = "";
+    }
+}
+
+function renderHistory(punches, breaks) {
+    const list = document.getElementById('historyList');
+    if(punches.length === 0 && breaks.length === 0) {
+        list.innerHTML = '<li style="text-align:center; color:#8E8E93;">No records yet</li>';
+        return;
+    }
+    
+    let html = '';
+    const events = [...punches.map(p => ({...p, eventType: 'punch'})), ...breaks.map(b => ({...b, eventType: 'break'}))];
+    events.sort((a, b) => new Date(a.time || a.start) - new Date(b.time || a.start));
+
+    events.forEach(e => {
+        const time = new Date(e.time || e.start).toLocaleTimeString('en-GB', { timeZone:'Asia/Shanghai', hour:'2-digit', minute:'2-digit' });
+
+        if(e.eventType === 'punch') {
+            html += `<li class="history-item"><span class="history-date" style="color:${e.type==='in'? 'var(--primary-blue)':'var(--danger-red)'}">${e.type.toUpperCase()}</span> <span class="history-detail">at ${time} (CST)</span></li>`;
+        } else if (e.eventType === 'break') {
+            const end = e.end ? new Date(e.end).toLocaleTimeString('en-GB', { timeZone:'Asia/Shanghai', hour:'2-digit', minute:'2-digit' }) : '...';
+            html += `<li class="history-item"><span class="history-date" style="color:var(--warning-orange)">BREAK</span> <span class="history-detail">${time} - ${end}</span></li>`;
+        }
+    });
+    list.innerHTML = html;
+}
+
+// --- 5. Focus Timer Logic (unchanged logic) ---
+function startTimer() {
+    if(!timerState.running) {
+        timerState.running = true;
+        saveData(); 
+        timerState.interval = setInterval(() => {
+            timerState.ms += 1000;
+            const s = timerState.ms/1000;
+            const hh = Math.floor(s/3600).toString().padStart(2,'0');
+            const mm = Math.floor((s%3600)/60).toString().padStart(2,'0');
+            const ss = Math.floor(s%60).toString().padStart(2,'0');
+            document.getElementById('timerDisplay').innerText = `${hh}:${mm}:${ss}`;
+        }, 1000);
+    }
+}
+function pauseTimer() { 
+    timerState.running = false; 
+    clearInterval(timerState.interval); 
+    saveData(); 
+}
+function resetTimer() { 
+    pauseTimer(); 
+    timerState.ms = 0; 
+    document.getElementById('timerDisplay').innerText="00:00:00"; 
+    saveData(); 
+}
+
+
+// --- 6. User Actions & Effects (unchanged logic) ---
+function handlePunch(type) {
+    const key = getEstDateKey();
+    if(!appData.punches[key]) appData.punches[key] = { punches: [] };
+    
+    appData.punches[key].punches.push({ type: type, time: new Date().toISOString() });
+    
+    saveData(); 
+    calculateStats();
+    renderCalendar();
+    triggerEffect(type === 'in' ? '#007AFF' : '#FF3B30');
+}
+
+function handleBreak() {
+    const key = getEstDateKey();
+    if(!appData.breaks[key]) appData.breaks[key] = [];
+    const active = appData.breaks[key].find(b => !b.end);
+    
+    if(active) {
+        active.end = new Date().toISOString();
+        triggerEffect('#FF9500'); 
+    } else {
+        appData.breaks[key].push({ start: new Date().toISOString(), end: null });
+        triggerEffect('#34C759');
+    }
+    
+    saveData(); 
+    calculateStats();
+}
+
+function triggerEffect(color) {
+    const overlay = document.getElementById('effectOverlay');
+    overlay.style.display = 'flex';
+    overlay.innerHTML = '';
+    
+    const circle1 = document.createElement('div');
+    circle1.className = 'ripple-circle';
+    circle1.style.borderColor = color;
+    circle1.style.animationDelay = '0s';
+    
+    const circle2 = document.createElement('div');
+    circle2.className = 'ripple-circle';
+    circle2.style.borderColor = color;
+    circle2.style.animationDelay = '0.15s';
+    
+    overlay.appendChild(circle1);
+    overlay.appendChild(circle2);
+    
+    setTimeout(() => { overlay.style.display = 'none'; }, 1000);
+}
+
+
+// --- 7. Todo (unchanged logic) ---
+function openTodoModal() {
+    document.getElementById('todoModal').style.display = 'flex';
+    document.getElementById('modalInput').value = '';
+    setTimeout(() => document.getElementById('modalInput').focus(), 100);
+}
+function closeTodoModal() { 
+    document.getElementById('todoModal').style.display = 'none'; 
+}
+
+function saveTodoFromModal() {
+    const val = document.getElementById('modalInput').value.trim();
+    if(val) {
+        const activeTodos = appData.todos.filter(t => !t.completed);
+        if (activeTodos.length >= TODO_LIMIT) {
+            const completedTodos = appData.todos.filter(t => !t.completed);
+            if (completedTodos.length < appData.todos.length) { 
+                const deletedCount = appData.todos.length - completedTodos.length;
+                appData.todos = completedTodos;
+                alert(`To-do list full (${TODO_LIMIT} active items). Automatically deleted ${deletedCount} completed item(s).`);
+            } else {
+                alert(`To-do list is full (${TODO_LIMIT} active items). Please complete or delete an item before adding a new one.`);
+                return; 
+            }
+        }
+        
+        appData.todos.push({ text: val, completed: false });
+        saveData(); 
+        renderTodos();
+        closeTodoModal();
+    }
+}
+
+function renderTodos() {
+    const list = document.getElementById('todoList');
+    list.innerHTML = '';
+
+    const sortedTodos = [...appData.todos].sort((a, b) => (a.completed === b.completed) ? 0 : a.completed ? 1 : -1);
+
+    sortedTodos.forEach((t, i) => {
+        const li = document.createElement('li');
+        li.className = `todo-item ${t.completed ? 'completed' : ''}`;
+        
+        const originalIndex = appData.todos.findIndex(item => item.text === t.text);
+
+        li.innerHTML = `
+            <input type="checkbox" class="todo-checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTodoCompletion(${originalIndex}, this)">
+            <span class="todo-text">${t.text}</span>
+        `;
+        list.appendChild(li);
+    });
+}
+
+function toggleTodoCompletion(index, checkbox) {
+    const targetItem = appData.todos.find(item => item.text === appData.todos[index].text);
+    if (targetItem) {
+        targetItem.completed = checkbox.checked;
+        saveData(); 
+        renderTodos();
+    }
+}
+
+
+// --- 8. Calendar (unchanged logic) ---
+function renderCalendar() {
+    const grid = document.getElementById('calGrid');
+    grid.innerHTML = '';
+    const y = calDate.getFullYear(), m = calDate.getMonth();
+    document.getElementById('calTitle').innerText = new Date(y, m).toLocaleString('en-US', {month:'short', year:'numeric'});
+    
+    const fDay = new Date(y, m, 1).getDay();
+    const days = new Date(y, m+1, 0).getDate();
+    const today = new Date();
+    const todayKey = today.toDateString();
+
+    for(let i=0; i<fDay; i++) grid.appendChild(document.createElement('div'));
+    
+    for(let d=1; d<=days; d++) {
+        const cell = document.createElement('div');
+        cell.className = 'day-cell';
+        cell.innerText = d;
+        const dObj = new Date(y, m, d);
+        
+        const k = dObj.toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+        
+        if(HOLIDAYS.includes(k)) cell.classList.add('holiday');
+        
+        if(dObj.toDateString() === todayKey) {
+            cell.classList.add('today');
+        } else if (dObj < today) {
+            cell.classList.add('past');
+        }
+        
+        if(appData.punches[k] && appData.punches[k].punches.length > 0) cell.classList.add('has-punch');
+        
+        grid.appendChild(cell);
+    }
+}
+function moveMonth(d) { calDate.setMonth(calDate.getMonth() + d); renderCalendar(); }
+
+
+// --- 9. Punch Management Modal (unchanged logic) ---
+function openPunchModal() {
+    const key = getEstDateKey();
+    const punches = appData.punches[key] ? appData.punches[key].punches : [];
+    const listContainer = document.getElementById('punchListContainer');
+    const deleteInput = document.getElementById('punchDeleteInput');
+    
+    if (punches.length === 0) {
+        listContainer.innerHTML = '<div style="text-align:center; color:var(--text-secondary);">No punches recorded today.</div>';
+        deleteInput.style.display = 'none';
+    } else {
+        deleteInput.style.display = 'block';
+        let html = punches.map((p, i) => {
+            const time = new Date(p.time).toLocaleTimeString('en-GB', { timeZone:'Asia/Shanghai', hour:'2-digit', minute:'2-digit' });
+            return `<div class="punch-list-item" style="color:${p.type==='in'? 'var(--primary-blue)':'var(--danger-red)'};">
+                        **${i+1}.** ${p.type.toUpperCase()} at ${time} (CST)
+                    </div>`;
+        }).join('');
+        listContainer.innerHTML = html;
+        deleteInput.value = '';
+    }
+    
+    document.getElementById('punchModal').style.display = 'flex';
+    setTimeout(() => deleteInput.focus(), 100);
+}
+
+function closePunchModal() {
+    document.getElementById('punchModal').style.display = 'none';
+}
+
+function deletePunchFromModal() {
+    const key = getEstDateKey();
+    const punches = appData.punches[key] ? appData.punches[key].punches : [];
+    const input = document.getElementById('punchDeleteInput').value.trim();
+    const idx = parseInt(input) - 1;
+
+    if (punches.length === 0) {
+        alert("No records to delete.");
+        closePunchModal();
+        return;
+    }
+
+    if (idx >= 0 && idx < punches.length) {
+        punches.splice(idx, 1); 
+        if (punches.length === 0) {
+             delete appData.punches[key]; 
+        }
+        saveData(); 
+        calculateStats(); 
+        renderCalendar(); 
+        closePunchModal();
+    } else {
+        alert("Invalid number. Please enter a valid record number to delete.");
+    }
+}
+
+
+// --- 10. Full Reset Confirmation (MODIFIED LOGIC: No Prompt, Code Required) ---
+function openResetConfirmModal() {
+    document.getElementById('resetConfirmModal').style.display = 'flex';
+    document.getElementById('resetConfirmInput').value = '';
+    setTimeout(() => document.getElementById('resetConfirmInput').focus(), 100);
+}
+
+function closeResetConfirmModal() {
+    document.getElementById('resetConfirmModal').style.display = 'none';
+}
+
+function confirmReset() {
+    const inputCode = document.getElementById('resetConfirmInput').value.trim();
+    
+    if (inputCode !== RESET_CODE) {
+        // Keep the security check
+        alert("Incorrect security code. Please enter 0000.");
+        document.getElementById('resetConfirmInput').value = '';
+        return;
+    }
+    
+    // Safety check passed, proceed to fullReset
+    fullReset();
+    closeResetConfirmModal();
+}
+
+function fullReset() {
+    // 确保清除当前版本 DATA_KEY 的所有数据
+    localStorage.removeItem(DATA_KEY);
+    console.log(`All local data (${DATA_KEY}) successfully deleted.`);
+    // 强制刷新页面，彻底重置应用状态
+    location.reload(); 
+}
+
+
+// --- 11. Helper (unchanged) ---
+function updateProgressBar(workMs, breakMs) {
+    const track = document.getElementById('progressTrack');
+    const total = workMs + breakMs;
+    if(total > 0) {
+        const wp = (workMs / total) * 100;
+        const bp = (breakMs / total) * 100;
+        track.innerHTML = `<div class="bar-work" style="width:${wp}%"></div><div class="bar-break" style="width:${bp}%"></div>`;
+    } else { track.innerHTML = ''; }
+}
+
+function formatDur(ms, showSec) {
+    if(!ms) return showSec ? '0h 0m 0s' : '0h 0m';
+    const s = Math.floor(ms / 1000);
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = s % 60;
+    return showSec ? `${h}h ${m}m ${sec}s` : `${h}h ${m}m`;
+}
+</script>
+</body>
+</html>
