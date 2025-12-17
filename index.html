@@ -208,9 +208,29 @@ function migrateData() {
 }
 
 function loadData() {
-    const raw = localStorage.getItem(DATA_KEY);
-    if (raw) appData = JSON.parse(raw);
-    document.getElementById('memoInput').value = appData.memo || "";
+    try {
+        const raw = localStorage.getItem(DATA_KEY);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            // 修复点：确保如果 parsed 是 null 或缺少字段，程序不会崩溃
+            appData = {
+                punches: parsed.punches || {},
+                breaks: parsed.breaks || {},
+                todos: parsed.todos || [],
+                memo: parsed.memo || ""  // 如果旧数据没有memo，就给它一个空字符串
+            };
+        }
+        
+        // 修复点：确保界面元素存在再赋值
+        const memoInput = document.getElementById('memoInput');
+        if (memoInput) {
+            memoInput.value = appData.memo || "";
+        }
+        console.log("数据加载成功！");
+    } catch (e) {
+        console.error("加载旧数据时出错，已初始化新数据:", e);
+        appData = { punches: {}, breaks: {}, todos: [], memo: "" };
+    }
 }
 
 function saveData() { localStorage.setItem(DATA_KEY, JSON.stringify(appData)); }
