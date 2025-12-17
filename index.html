@@ -1,25 +1,14 @@
-<!-- Workplace V24 – Personal iOS-style WebApp
- Features:
- 1. GitHub JSON sync with throttling + manual sync
- 2. Sync status indicator
- 3. iOS PWA App-style (Add to Home Screen)
- 4. Face ID / Passkey after first login
- 5. Single IN / OUT per day, multiple BREAKs
- Safe for GitHub Pages (public)
--->
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="LSZ">
 <title>LSZ</title>
 <style>
 :root{
- --bg:#F2F2F7;--card:rgba(255,255,255,.92);
+ --bg:#F2F2F7;--card:rgba(255,255,255,.9);
  --blue:#007AFF;--green:#34C759;--red:#FF3B30;--orange:#FF9500;--gray:#8E8E93;
  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;
 }
@@ -28,29 +17,27 @@ body{margin:0;background:var(--bg);display:flex;justify-content:center}
 .container{width:100%;max-width:390px;padding:12px 12px 96px;display:none;gap:12px;flex-direction:column}
 .card{background:var(--card);border-radius:20px;padding:16px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
 .card-title{font-weight:700;font-size:14px;color:#3a3a3c;margin-bottom:10px}
-.btn{border:none;border-radius:14px;padding:14px;font-weight:600;color:#fff}
+.btn{border:none;border-radius:14px;padding:14px;font-weight:600;color:#fff;cursor:pointer}
 .btn.blue{background:var(--blue)}.btn.red{background:var(--red)}
-.btn:disabled{background:#d1d1d6}
+.btn:disabled{background:#d1d1d6;cursor:not-allowed}
 .time{font-size:22px;font-weight:300;font-variant-numeric:tabular-nums}
-.footer{font-size:10px;color:var(--gray);text-align:center}
-.sync-dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:6px}
 </style>
 </head>
 <body>
 
-<!-- Login -->
+<!-- 登录界面 -->
 <div id="loginScreen" class="container" style="display:flex;justify-content:center">
  <div class="card" style="text-align:center;width:260px">
-  <h2 style="margin:0">LSZ</h2>
-  <input id="u" value="lishengze" placeholder="User ID" style="width:100%;padding:10px;border-radius:10px;border:none;background:#eee" />
-  <input id="p" type="password" value="09876123" placeholder="Passcode" style="width:100%;padding:10px;margin-top:6px;border-radius:10px;border:none;background:#eee" />
+  <h3 style="margin:0">LSZ</h3>
+  <input id="username" placeholder="User ID" style="width:100%;padding:10px;border-radius:10px;border:none;background:#eee" value="lishengze" />
+  <input id="password" type="password" placeholder="Passcode" style="width:100%;padding:10px;margin-top:6px;border-radius:10px;border:none;background:#eee" value="09876123" />
   <button class="btn blue" style="width:100%;margin-top:10px" onclick="doLogin()">Sign In</button>
   <button class="btn" style="width:100%;margin-top:8px;background:#000" onclick="passkeyLogin()">Face ID / Touch ID</button>
  </div>
 </div>
 
-<!-- App -->
-<div id="app" class="container">
+<!-- 主界面 -->
+<div id="appScreen" class="container">
 
 <div class="card" style="text-align:center">
  <div style="display:flex;justify-content:space-around">
@@ -76,119 +63,99 @@ body{margin:0;background:var(--bg);display:flex;justify-content:center}
  <button id="breakBtn" class="btn" style="margin-top:8px;background:var(--green)" onclick="toggleBreak()">Start Break</button>
 </div>
 
-<div class="footer">
- <span class="sync-dot" id="syncDot" style="background:#999"></span>
- <span id="syncText">Idle</span>
- <div style="margin-top:6px"><button onclick="manualSync()" style="border:none;background:none;color:var(--blue)">Sync Now</button></div>
-</div>
+<div class="footer" style="text-align:center;font-size:10px;color:var(--gray)">V-24.1 • SYSTEM SECURE</div>
 </div>
 
 <script>
-/* ---------------- CONFIG ---------------- */
+/* ---------- 用户 & 本地数据 ---------- */
 const AUTH={u:'lishengze',p:'09876123'};
-const DB_KEY='LSZ_DB';
-const SYNC_DELAY=2000;
+const DB_KEY='WP_V24_DB';
 let db={punch:{},break:{}};
-let dirty=false,syncTimer=null;
 
-/* ---------------- LOGIN ---------------- */
+/* ---------- 登录 ---------- */
 function doLogin(){
- if(u.value===AUTH.u && p.value===AUTH.p){
-  localStorage.setItem('lsz_logged','1');
-  registerPasskey();
-  showApp();
+ if(username.value===AUTH.u && password.value===AUTH.p){
+  loginScreen.style.display='none';
+  appScreen.style.display='flex';
+  loadData();
+  tick();
+  setInterval(tick,1000);
  }
 }
 
-async function passkeyLogin(){
- if(!window.PublicKeyCredential) return alert('Not supported');
- try{
-  await navigator.credentials.get({publicKey:{challenge:new Uint8Array(16),timeout:60000}});
-  showApp();
- }catch{}
+function passkeyLogin(){
+ if(localStorage.getItem('lsz_logged')){doLogin();}
+ else{alert('Face ID 注册/登录未启用，首次请用密码登录');}
 }
 
-function showApp(){
- loginScreen.style.display='none';
- app.style.display='flex';
- load();
- tick();
- setInterval(tick,1000);
-}
+/* ---------- 数据存储 ---------- */
+function loadData(){const j=localStorage.getItem(DB_KEY);if(j)db=JSON.parse(j);}
+function saveData(){localStorage.setItem(DB_KEY,JSON.stringify(db));}
 
-/* ---------------- DATA ---------------- */
-function load(){const j=localStorage.getItem(DB_KEY);if(j)db=JSON.parse(j)}
-function save(){localStorage.setItem(DB_KEY,JSON.stringify(db));markDirty()}
-
-function markDirty(){
- dirty=true;syncDot.style.background='#f4c430';syncText.innerText='Pending';
- clearTimeout(syncTimer);
- syncTimer=setTimeout(sync, SYNC_DELAY);
-}
-
-/* ---------------- TIME ---------------- */
+/* ---------- 时间 ---------- */
 function tick(){
- const n=new Date();
- sh.innerText=n.toLocaleTimeString('en-GB',{timeZone:'Asia/Shanghai'});
- ny.innerText=n.toLocaleTimeString('en-GB',{timeZone:'America/New_York'});
- date.innerText=n.toLocaleDateString('en-GB');
- calc();
+ const now=new Date();
+ sh.innerText=now.toLocaleTimeString('en-GB',{timeZone:'Asia/Shanghai'});
+ ny.innerText=now.toLocaleTimeString('en-GB',{timeZone:'America/New_York'});
+ date.innerText=now.toLocaleDateString('en-GB');
+ calcSummary();
 }
 
-function dayKey(d){return d.toLocaleDateString('en-CA',{timeZone:'America/New_York'})}
+function dayKey(d){return d.toLocaleDateString('en-CA',{timeZone:'America/New_York'});}
 
-/* ---------------- LOGIC ---------------- */
-function punch(t){
- const k=dayKey(new Date());db.punch[k]??=[];
- if(db.punch[k].some(x=>x.t===t))return;
- db.punch[k].push({t,time:Date.now()});save();
+/* ---------- 打卡逻辑 ---------- */
+function punch(type){
+ const k=dayKey(new Date());
+ if(!db.punch[k]) db.punch[k]=[];
+ const last=db.punch[k].at(-1);
+ if(last && last.t===type) return;
+ db.punch[k].push({t:type,time:Date.now()});
+ saveData();
+ calcSummary();
 }
 
 function toggleBreak(){
- const k=dayKey(new Date());db.break[k]??=[];
- const a=db.break[k].find(x=>!x.e);
- if(a)a.e=Date.now();else db.break[k].push({s:Date.now()});
- save();
+ const k=dayKey(new Date());
+ if(!db.break[k]) db.break[k]=[];
+ const active=db.break[k].find(x=>!x.e);
+ if(active) active.e=Date.now(); else db.break[k].push({s:Date.now()});
+ saveData();
+ calcSummary();
 }
 
-function calc(){
+/* ---------- 计算统计 ---------- */
+function calcSummary(){
  const k=dayKey(new Date());
- const p=db.punch[k]||[],b=db.break[k]||[];
- let w=0,br=0,last=null;
- p.forEach(x=>{if(x.t==='in')last=x.time;else if(last){w+=x.time-last;last=null}});
- if(last)w+=Date.now()-last;
- b.forEach(x=>{br+=(x.e||Date.now())-x.s});
+ const p=db.punch[k]||[], b=db.break[k]||[];
+ let w=0, br=0, last=null;
+
+ // 工作时间
+ p.forEach(x=>{
+  if(x.t==='in') last=x.time;
+  else if(last){w+=x.time-last; last=null;}
+ });
+ if(last) w+=Date.now()-last;
+
+ // 休息时间
+ b.forEach(x=>{br += (x.e||Date.now())-x.s;});
+
+ // 更新界面
  work.innerText=Math.floor((w-br)/3600000)+'h '+Math.floor((w-br)%3600000/60000)+'m';
  break.innerText=Math.floor(br/60000)+'m';
+
  const onBreak=b.some(x=>!x.e);
  breakBtn.innerText=onBreak?'End Break':'Start Break';
  breakBtn.style.background=onBreak?'var(--orange)':'var(--green)';
+
  inBtn.disabled=p.some(x=>x.t==='in');
  outBtn.disabled=!p.some(x=>x.t==='in')||p.some(x=>x.t==='out');
+
+ // 预计下班时间
  if(p[0]){
   const estT=new Date(p[0].time+8.5*3600000);
   est.innerText=estT.toLocaleTimeString('en-GB',{timeZone:'Asia/Shanghai',hour:'2-digit',minute:'2-digit'});
  }
 }
-
-/* ---------------- SYNC (placeholder) ---------------- */
-function sync(){
- dirty=false;
- syncDot.style.background='var(--green)';
- syncText.innerText='Synced';
-}
-function manualSync(){sync()}
-
-/* ---------------- PASSKEY REGISTER ---------------- */
-async function registerPasskey(){
- if(!window.PublicKeyCredential) return;
- try{
-  await navigator.credentials.create({publicKey:{challenge:new Uint8Array(16),rp:{name:'LSZ'},user:{id:new Uint8Array(8),name:'lishengze',displayName:'LSZ'},pubKeyCredParams:[{type:'public-key',alg:-7}],timeout:60000,attestation:'none'}});
- }catch{}
-}
-
-/* Auto-login */
-if(localStorage.getItem('lsz_logged'))showApp();
 </script>
 </body>
 </html>
