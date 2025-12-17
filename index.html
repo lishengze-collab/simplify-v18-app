@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simplify, simplify (V19.0)</title>
+    <title>Simplify Workspace V20</title>
     
     <style>
         :root {
@@ -25,14 +25,19 @@
         input, textarea { user-select: auto; }
         
         body { font-size: 15px; background-color: var(--bg-color); color: var(--text-primary); margin: 0; padding: 20px 12px; display: flex; justify-content: center; min-height: 100vh; }
-        .container { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 16px; padding-bottom: 40px; }
+        .container { width: 100%; max-width: 400px; display: none; flex-direction: column; gap: 16px; padding-bottom: 40px; }
 
+        /* 登录页样式 */
+        #loginOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--bg-color); display:flex; align-items:center; justify-content:center; z-index:9999; }
+        .login-card { width:90%; max-width:320px; padding:30px; background:var(--card-bg); border-radius:var(--card-radius); box-shadow:0 10px 30px rgba(0,0,0,0.1); text-align:center; }
+        .login-input { width:100%; padding:12px; margin:8px 0; border:1px solid var(--border-color); border-radius:12px; font-size:16px; text-align:center; }
+        .login-btn { width:100%; padding:14px; background:var(--primary-blue); color:white; border-radius:12px; margin-top:15px; font-weight:700; }
+
+        /* 通用样式 */
+        .card { background: var(--card-bg); backdrop-filter: blur(25px); border-radius: var(--card-radius); padding: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.4); overflow: hidden; }
+        .card h2 { font-size: 1.1rem; font-weight: 700; margin: 0 0 12px 0; }
         .app-header { text-align: center; margin-bottom: 5px; }
-        .app-title { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; margin: 0; }
         .tenure-badge { color: var(--text-secondary); padding: 4px 0; font-size: 1.1rem; font-weight: 700; margin-top: 10px; }
-
-        .card { background: var(--card-bg); backdrop-filter: blur(25px); border-radius: var(--card-radius); padding: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.4); }
-        .card h2 { font-size: 1.1rem; font-weight: 700; margin: 0 0 12px 0; display: flex; justify-content: space-between; align-items: center; }
 
         button { border: none; cursor: pointer; font-size: 1rem; font-weight: 600; transition: transform 0.1s; }
         button:active { transform: scale(0.96); opacity: 0.8; }
@@ -48,28 +53,24 @@
         .btn-in { background: var(--primary-blue); }
         .btn-out { background: var(--danger-red); }
         
-        .status-text { text-align: center; font-size: 0.85rem; margin-top: 12px; color: var(--text-secondary); }
-        .status-highlight { color: var(--text-primary); font-weight: 600; }
-
         .stats-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px; }
         .progress-track { height: 10px; background: #E5E5EA; border-radius: 10px; margin: 14px 0; overflow: hidden; display: flex; }
         .bar-work { background: var(--primary-blue); height: 100%; }
         .bar-break { background: var(--primary-light-blue); height: 100%; }
-        
-        #todoList { list-style: none; padding: 0; margin: 0; height: 160px; overflow-y: auto; overflow-x: hidden; }
-        .todo-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 0.5px solid var(--border-color); position: relative; transition: transform 0.2s; background: white; width: 100%; }
-        .todo-checkbox { appearance: none; width: 20px; height: 20px; border: 1.5px solid #C7C7CC; border-radius: 50%; margin-right: 10px; flex-shrink: 0; }
-        .todo-checkbox:checked { background: var(--text-secondary); border-color: transparent; }
-        .todo-text { font-size: 0.9rem; flex: 1; }
-        .delete-btn { position: absolute; right: -80px; width: 80px; height: 100%; background: var(--danger-red); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; }
 
+        /* 滑动删除项通用样式 */
+        .swipe-item { display: flex; align-items: center; position: relative; transition: transform 0.2s; background: white; width: 100%; }
+        .delete-action { position: absolute; right: -80px; width: 80px; height: 100%; background: var(--danger-red); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; }
+
+        /* 历史记录样式 */
+        .history-date-header { font-size: 0.75rem; font-weight: 800; color: var(--text-secondary); margin-top: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 2px; }
+        .history-row { padding: 10px 0; border-bottom: 0.5px solid var(--border-color); font-size: 0.85rem; width:100%; }
+
+        /* 日历与备忘录 */
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 6px; text-align: center; }
         .day-cell { width: 26px; height: 26px; line-height: 26px; margin: 0 auto; font-size: 0.75rem; position: relative; }
         .day-cell.has-punch::after { content: ''; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background: var(--text-primary); border-radius: 50%; }
-
-        .memo-area { width: 100%; min-height: 100px; border: none; background: transparent; font-size: 0.9rem; line-height: 1.5; resize: none; color: var(--text-primary); }
-
-        .history-date-header { font-size: 0.75rem; font-weight: 800; color: var(--text-secondary); margin-top: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 2px; }
+        .memo-area { width: 100%; min-height: 100px; border: none; background: transparent; font-size: 0.9rem; line-height: 1.5; resize: none; }
 
         .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); z-index: 3000; backdrop-filter: blur(5px); align-items: center; justify-content: center; }
         .modal-content { background: white; width: 280px; border-radius: 14px; text-align: center; padding: 20px 0 0; }
@@ -80,9 +81,19 @@
 </head>
 <body>
 
-<div class="container">
+<div id="loginOverlay">
+    <div class="login-card">
+        <h2 style="margin-top:0">Workspace Login</h2>
+        <input type="text" id="username" class="login-input" placeholder="Username">
+        <input type="password" id="password" class="login-input" placeholder="Password">
+        <button class="login-btn" onclick="checkLogin()">Login</button>
+        <p id="loginError" style="color:red; font-size:12px; margin-top:10px; display:none;">Incorrect credentials</p>
+    </div>
+</div>
+
+<div class="container" id="mainApp">
     <div class="app-header">
-        <h1 class="app-title">Simplify, simplify</h1>
+        <h1 style="font-size:1.6rem; font-weight:800; margin:0">Simplify, simplify</h1>
         <div class="tenure-badge" id="tenureCounter">Day --</div>
     </div>
 
@@ -101,36 +112,28 @@
             <button class="punch-btn btn-in" onclick="handlePunch('in')">Clock In</button>
             <button class="punch-btn btn-out" onclick="handlePunch('out')">Clock Out</button>
         </div>
-        <div class="status-text">
-            <span id="statusText" class="status-highlight">--</span> <span id="etaText"></span>
+        <div class="status-text" style="text-align:center; font-size:0.85rem; margin-top:12px; color:var(--text-secondary);">
+            <span id="statusText" style="color:var(--text-primary); font-weight:600">--</span> <span id="etaText"></span>
         </div>
     </div>
 
     <div class="card">
         <h2>Daily Summary</h2>
-        <div class="stats-row">
-            <span>Work Time</span>
-            <span class="val" id="valWork">0h 0m (0%)</span>
-        </div>
-        <div class="stats-row">
-            <span>Break Time</span>
-            <span class="val" id="valBreak">0h 0m (0%)</span>
-        </div>
+        <div class="stats-row"><span>Work Time</span><span id="valWork">0h 0m (0%)</span></div>
+        <div class="stats-row"><span>Break Time</span><span id="valBreak">0h 0m (0%)</span></div>
         <div class="progress-track" id="progressTrack"></div>
         <button class="punch-btn btn-in" style="width:100%; background:var(--success-green)" id="btnBreak" onclick="handleBreak()">Start Break</button>
     </div>
 
     <div class="card">
         <div style="display:flex; gap:12px;">
-            <div style="flex:1.2;">
-                <div id="calGrid" class="cal-grid"></div>
-            </div>
+            <div style="flex:1.2;"><div id="calGrid" class="cal-grid"></div></div>
             <div style="flex:1.5;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <span style="font-weight:700">To-do</span>
                     <button style="background:none; color:var(--primary-blue); font-size:1.4rem;" onclick="openTodoModal()">+</button>
                 </div>
-                <ul id="todoList"></ul>
+                <ul id="todoList" style="list-style:none; padding:0; margin:0; height:150px; overflow-y:auto; overflow-x:hidden;"></ul>
             </div>
         </div>
     </div>
@@ -148,7 +151,7 @@
 
     <div class="card">
         <h2>Punch History</h2>
-        <div id="historyList" style="max-height:200px; overflow-y:auto;"></div>
+        <div id="historyList" style="max-height:250px; overflow-y:auto; overflow-x:hidden;"></div>
     </div>
 
     <button class="punch-btn" style="background:#E5E5EA; color:var(--danger-red); width:100%;" ondblclick="fullReset()">Double Tap to Reset</button>
@@ -166,19 +169,43 @@
 </div>
 
 <script>
-// 这里已为您修改为 18.2 的旧 Key 以保留数据
-const DATA_KEY = 'timeTracker_V18.2_Data';
+const DATA_KEY = 'timeTracker_V20.0_Data'; // 升级到新 Key
+const OLD_KEY = 'timeTracker_V18.2_Data'; // 指定旧版 Key
 const START_DATE = '2022-05-04';
 let appData = { punches: {}, breaks: {}, todos: [], memo: "" };
 
-window.onload = () => {
+// 登录验证
+function checkLogin() {
+    const u = document.getElementById('username').value;
+    const p = document.getElementById('password').value;
+    if(u === 'lishengze' && p === '09876123') {
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'flex';
+        initApp();
+    } else {
+        document.getElementById('loginError').style.display = 'block';
+    }
+}
+
+function initApp() {
+    migrateData(); // 自动执行数据迁移
     loadData();
     setInterval(updateClock, 1000);
     setInterval(calculateStats, 1000);
     renderCalendar();
     renderTodos();
     initTenure();
-};
+}
+
+// 核心：自动数据迁移逻辑
+function migrateData() {
+    const newData = localStorage.getItem(DATA_KEY);
+    const oldData = localStorage.getItem(OLD_KEY);
+    if (!newData && oldData) {
+        localStorage.setItem(DATA_KEY, oldData);
+        console.log("V18.2 数据已自动迁移至 V20.0");
+    }
+}
 
 function loadData() {
     const raw = localStorage.getItem(DATA_KEY);
@@ -186,9 +213,7 @@ function loadData() {
     document.getElementById('memoInput').value = appData.memo || "";
 }
 
-function saveData() {
-    localStorage.setItem(DATA_KEY, JSON.stringify(appData));
-}
+function saveData() { localStorage.setItem(DATA_KEY, JSON.stringify(appData)); }
 
 function updateClock() {
     const now = new Date();
@@ -198,10 +223,8 @@ function updateClock() {
 
 function isDST(date) {
     const year = date.getFullYear();
-    const start = new Date(year, 2, 14);
-    start.setDate(14 - start.getDay());
-    const end = new Date(year, 10, 7);
-    end.setDate(7 - end.getDay());
+    const start = new Date(year, 2, 14); start.setDate(14 - start.getDay());
+    const end = new Date(year, 10, 7); end.setDate(7 - end.getDay());
     return date >= start && date < end;
 }
 
@@ -243,17 +266,71 @@ function calculateStats() {
         const firstIn = new Date(dayPunches[0].time);
         const standardDayMs = 8.5 * 60 * 60 * 1000;
         const finishTime = new Date(firstIn.getTime() + standardDayMs + breakMs);
-        
-        const estStr = finishTime.toLocaleTimeString('en-GB', {timeZone:'America/New_York', hour:'2-digit', minute:'2-digit'});
-        const cstStr = finishTime.toLocaleTimeString('en-GB', {timeZone:'Asia/Shanghai', hour:'2-digit', minute:'2-digit'});
-        etaEl.innerText = `| ${estStr}(${cstStr})`;
+        etaEl.innerText = `| ${finishTime.toLocaleTimeString('en-GB', {timeZone:'America/New_York', hour:'2-digit', minute:'2-digit'})}(${finishTime.toLocaleTimeString('en-GB', {timeZone:'Asia/Shanghai', hour:'2-digit', minute:'2-digit'})})`;
     } else {
         statusEl.innerText = dayPunches.length > 0 ? "Clocked Out" : "Ready";
         etaEl.innerText = "";
     }
-
     updateCumulative();
     renderHistory();
+}
+
+// 通用滑动逻辑
+let touchStartX = 0;
+function handleSwipeStart(e) { touchStartX = e.touches[0].clientX; }
+function handleSwipeMove(e) {
+    let diff = touchStartX - e.touches[0].clientX;
+    let target = e.currentTarget;
+    if (diff > 20) target.style.transform = `translateX(-${Math.min(diff, 80)}px)`;
+    else target.style.transform = `translateX(0)`;
+}
+function handleSwipeEnd(e) {
+    let diff = touchStartX - e.changedTouches[0].clientX;
+    let target = e.currentTarget;
+    if (diff > 50) target.style.transform = `translateX(-80px)`;
+    else target.style.transform = `translateX(0)`;
+}
+
+function renderTodos() {
+    const list = document.getElementById('todoList');
+    list.innerHTML = '';
+    appData.todos.forEach((t, i) => {
+        const li = document.createElement('li');
+        li.className = 'swipe-item';
+        li.style.borderBottom = '0.5px solid var(--border-color)';
+        li.style.padding = '10px 0';
+        li.setAttribute('ontouchstart', 'handleSwipeStart(event)');
+        li.setAttribute('ontouchmove', 'handleSwipeMove(event)');
+        li.setAttribute('ontouchend', 'handleSwipeEnd(event)');
+        li.innerHTML = `
+            <input type="checkbox" style="margin-right:10px" ${t.done?'checked':''} onchange="toggleTodo(${i})">
+            <span style="flex:1; font-size:0.9rem; ${t.done?'text-decoration:line-through;color:#8E':''}">${t.text}</span>
+            <div class="delete-action" onclick="deleteTodo(${i})">Delete</div>
+        `;
+        list.appendChild(li);
+    });
+}
+
+function renderHistory() {
+    const container = document.getElementById('historyList');
+    const oldHtml = container.innerHTML;
+    const keys = Object.keys(appData.punches).sort().reverse();
+    let newHtml = '';
+    keys.forEach(k => {
+        const d = new Date(k);
+        newHtml += `<div class="history-date-header">${d.toLocaleDateString('en-GB').replace(/\//g,'')}</div>`;
+        appData.punches[k].forEach((p, idx) => {
+            const time = new Date(p.time).toLocaleTimeString('en-GB', {timeZone:'Asia/Shanghai', hour12:false});
+            newHtml += `
+                <div class="swipe-item" ontouchstart="handleSwipeStart(event)" ontouchmove="handleSwipeMove(event)" ontouchend="handleSwipeEnd(event)">
+                    <div class="history-row">
+                        <span style="color:${p.type==='in'?'var(--primary-blue)':'var(--danger-red)'}">${p.type.toUpperCase()}</span> at ${time}
+                    </div>
+                    <div class="delete-action" onclick="deletePunch('${k}', ${idx})">Delete</div>
+                </div>`;
+        });
+    });
+    if(newHtml !== oldHtml) container.innerHTML = newHtml;
 }
 
 function handlePunch(type) {
@@ -263,6 +340,7 @@ function handlePunch(type) {
     saveData();
 }
 
+function deletePunch(key, idx) { appData.punches[key].splice(idx, 1); if(appData.punches[key].length===0) delete appData.punches[key]; saveData(); renderHistory(); }
 function handleBreak() {
     const key = new Date().toLocaleDateString('en-CA', {timeZone:'America/New_York'});
     if (!appData.breaks[key]) appData.breaks[key] = [];
@@ -273,43 +351,14 @@ function handleBreak() {
     saveData();
 }
 
-function renderTodos() {
-    const list = document.getElementById('todoList');
-    list.innerHTML = '';
-    appData.todos.forEach((t, i) => {
-        const li = document.createElement('li');
-        li.className = 'todo-item';
-        li.innerHTML = `
-            <input type="checkbox" class="todo-checkbox" ${t.done?'checked':''} onchange="toggleTodo(${i})">
-            <span class="todo-text" style="${t.done?'text-decoration:line-through;color:#8E':''}" ontouchstart="handleTouchStart(event, ${i})" ontouchmove="handleTouchMove(event, ${i})" ontouchend="handleTouchEnd(event, ${i})">${t.text}</span>
-            <div class="delete-btn" onclick="deleteTodo(${i})">Delete</div>
-        `;
-        list.appendChild(li);
-    });
-}
-
-let startX = 0;
-function handleTouchStart(e, i) { startX = e.touches[0].clientX; }
-function handleTouchMove(e, i) {
-    let diff = startX - e.touches[0].clientX;
-    if (diff > 20) e.currentTarget.parentElement.style.transform = `translateX(-${Math.min(diff, 80)}px)`;
-    else e.currentTarget.parentElement.style.transform = `translateX(0)`;
-}
-function handleTouchEnd(e, i) {
-    let diff = startX - e.changedTouches[0].clientX;
-    if (diff > 50) e.currentTarget.parentElement.style.transform = `translateX(-80px)`;
-    else e.currentTarget.parentElement.style.transform = `translateX(0)`;
-}
-
-function deleteTodo(i) { appData.todos.splice(i, 1); saveData(); renderTodos(); }
-function toggleTodo(i) { appData.todos[i].done = !appData.todos[i].done; saveData(); renderTodos(); }
-function openTodoModal() { document.getElementById('todoModal').style.display='flex'; }
-function closeTodoModal() { document.getElementById('todoModal').style.display='none'; }
 function saveTodo() {
     const val = document.getElementById('modalInput').value;
     if(val) { appData.todos.push({text:val, done:false}); saveData(); renderTodos(); closeTodoModal(); }
 }
-
+function deleteTodo(i) { appData.todos.splice(i, 1); saveData(); renderTodos(); }
+function toggleTodo(i) { appData.todos[i].done = !appData.todos[i].done; saveData(); renderTodos(); }
+function openTodoModal() { document.getElementById('todoModal').style.display='flex'; }
+function closeTodoModal() { document.getElementById('todoModal').style.display='none'; }
 function saveMemo() { appData.memo = document.getElementById('memoInput').value; saveData(); }
 
 function updateCumulative() {
@@ -326,30 +375,11 @@ function updateCumulative() {
     document.getElementById('totalHours').innerText = formatDur(totalMs);
 }
 
-function renderHistory() {
-    const container = document.getElementById('historyList');
-    container.innerHTML = '';
-    const keys = Object.keys(appData.punches).sort().reverse();
-    keys.forEach(k => {
-        const d = new Date(k);
-        const header = document.createElement('div');
-        header.className = 'history-date-header';
-        header.innerText = d.toLocaleDateString('en-GB').replace(/\//g,''); 
-        container.appendChild(header);
-        appData.punches[k].forEach(p => {
-            const row = document.createElement('div');
-            row.style.fontSize = '0.8rem'; row.style.padding = '4px 0';
-            const time = new Date(p.time).toLocaleTimeString('en-GB', {timeZone:'Asia/Shanghai', hour12:false});
-            row.innerHTML = `<span style="color:${p.type==='in'?'var(--primary-blue)':'var(--danger-red)'}">${p.type.toUpperCase()}</span> at ${time}`;
-            container.appendChild(row);
-        });
-    });
-}
-
 function renderCalendar() {
     const grid = document.getElementById('calGrid');
     const now = new Date();
     const days = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+    grid.innerHTML = '';
     for(let d=1; d<=days; d++) {
         const cell = document.createElement('div');
         cell.className = 'day-cell';
