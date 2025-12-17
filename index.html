@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simplify Workspace V20</title>
-    
+    <title>Workplace V20.1 (TEST)</title>
     <style>
         :root {
             --bg-color: #F2F2F7;
@@ -25,104 +24,133 @@
         input, textarea { user-select: auto; }
         
         body { font-size: 15px; background-color: var(--bg-color); color: var(--text-primary); margin: 0; padding: 20px 12px; display: flex; justify-content: center; min-height: 100vh; }
-        .container { width: 100%; max-width: 400px; display: none; flex-direction: column; gap: 16px; padding-bottom: 40px; }
+        .container { width: 100%; max-width: 400px; display: none; flex-direction: column; gap: 16px; padding-bottom: 40px; position: relative; }
 
-        /* 登录页样式 */
-        #loginOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--bg-color); display:flex; align-items:center; justify-content:center; z-index:9999; }
-        .login-card { width:90%; max-width:320px; padding:30px; background:var(--card-bg); border-radius:var(--card-radius); box-shadow:0 10px 30px rgba(0,0,0,0.1); text-align:center; }
-        .login-input { width:100%; padding:12px; margin:8px 0; border:1px solid var(--border-color); border-radius:12px; font-size:16px; text-align:center; }
-        .login-btn { width:100%; padding:14px; background:var(--primary-blue); color:white; border-radius:12px; margin-top:15px; font-weight:700; }
+        #loginOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(242, 242, 247, 1); display:flex; align-items:center; justify-content:center; z-index:9999; flex-direction: column; }
+        .login-card { width:90%; max-width:320px; padding:30px; background:white; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.1); text-align:center; }
+        .login-input { width:100%; padding:14px; margin:8px 0; border:1px solid #E5E5EA; border-radius:12px; font-size:16px; text-align:center; background: #F2F2F7; }
+        .login-btn { width:100%; padding:14px; background:var(--primary-blue); color:white; border-radius:12px; margin-top:15px; font-weight:600; font-size: 1rem; }
 
-        /* 通用样式 */
-        .card { background: var(--card-bg); backdrop-filter: blur(25px); border-radius: var(--card-radius); padding: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.4); overflow: hidden; }
-        .card h2 { font-size: 1.1rem; font-weight: 700; margin: 0 0 12px 0; }
-        .app-header { text-align: center; margin-bottom: 5px; }
+        .card { background: var(--card-bg); backdrop-filter: blur(25px); border-radius: var(--card-radius); padding: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.4); }
+        .card h2 { font-size: 1.1rem; font-weight: 700; margin: 0 0 12px 0; display: flex; justify-content: space-between; align-items: center; }
+        
+        .app-header { text-align: center; margin-bottom: 5px; position: relative; }
+        .logout-btn { position: absolute; right: 0; top: 5px; color: var(--primary-blue); font-size: 0.9rem; font-weight: 600; background: none; }
         .tenure-badge { color: var(--text-secondary); padding: 4px 0; font-size: 1.1rem; font-weight: 700; margin-top: 10px; }
 
         button { border: none; cursor: pointer; font-size: 1rem; font-weight: 600; transition: transform 0.1s; }
         button:active { transform: scale(0.96); opacity: 0.8; }
-        
+
         .time-display { display: flex; justify-content: space-between; padding-bottom: 15px; margin-bottom: 15px; border-bottom: 0.5px solid var(--border-color); }
         .time-zone { text-align: center; flex: 1; }
         .time-zone:first-child { border-right: 0.5px solid var(--border-color); }
         .time-label { font-size: 0.7rem; color: var(--text-secondary); font-weight: 700; margin-bottom: 4px;}
         .time-value { font-size: 1.4rem; font-weight: 700; margin: 0; font-variant-numeric: tabular-nums; }
-        
+
         .punch-controls { display: flex; gap: 12px; margin-top: 10px; }
-        .punch-btn { flex: 1; padding: 14px 0; border-radius: var(--btn-radius); color: white; }
+        .punch-btn { flex: 1; padding: 14px 0; border-radius: var(--btn-radius); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .btn-in { background: var(--primary-blue); }
         .btn-out { background: var(--danger-red); }
         
-        .stats-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px; }
+        .mood-controls { display: flex; justify-content: space-around; padding: 5px 0 15px; }
+        .mood-emoji { font-size: 2.2rem; background: none; transition: transform 0.2s; }
+        .mood-emoji:active { transform: scale(1.3); }
+        
+        .stats-row { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 8px; }
         .progress-track { height: 10px; background: #E5E5EA; border-radius: 10px; margin: 14px 0; overflow: hidden; display: flex; }
-        .bar-work { background: var(--primary-blue); height: 100%; }
-        .bar-break { background: var(--primary-light-blue); height: 100%; }
+        .bar-work { background: var(--primary-blue); height: 100%; transition: width 0.5s linear; }
+        .bar-break { background: var(--primary-light-blue); height: 100%; transition: width 0.5s linear; }
 
-        /* 滑动删除项通用样式 */
-        .swipe-item { display: flex; align-items: center; position: relative; transition: transform 0.2s; background: white; width: 100%; }
+        .timer-display { font-size: 2.2rem; font-weight: 300; margin: 10px 0; font-variant-numeric: tabular-nums; text-align: center; }
+        .timer-controls { display: flex; justify-content: center; gap: 10px; }
+        .timer-btn { padding: 8px 16px; border-radius: 20px; color: white; font-size: 0.9rem; }
+
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 8px; text-align: center; }
+        .day-cell { width: 28px; height: 28px; line-height: 28px; margin: 0 auto; font-size: 0.8rem; border-radius: 50%; }
+        .day-cell.past { color: #C7C7CC; }
+        .day-cell.today { font-weight: 700; color: var(--primary-blue); }
+        .day-cell.has-punch { background: var(--danger-red); color: white; font-weight: 600; box-shadow: 0 2px 5px rgba(255, 59, 48, 0.3); }
+
+        .swipe-item { display: flex; align-items: center; position: relative; transition: transform 0.2s; background: white; width: 100%; overflow: hidden; }
         .delete-action { position: absolute; right: -80px; width: 80px; height: 100%; background: var(--danger-red); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; }
+        
+        .history-date-header { font-size: 0.8rem; font-weight: 800; color: var(--text-secondary); margin-top: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; }
+        .history-row { padding: 12px 0; border-bottom: 0.5px solid var(--border-color); font-size: 0.9rem; width: 100%; display:flex; justify-content: space-between; }
+        .memo-area { width: 100%; min-height: 100px; border: none; background: transparent; font-size: 1rem; line-height: 1.5; resize: none; color: var(--text-primary); }
 
-        /* 历史记录样式 */
-        .history-date-header { font-size: 0.75rem; font-weight: 800; color: var(--text-secondary); margin-top: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 2px; }
-        .history-row { padding: 10px 0; border-bottom: 0.5px solid var(--border-color); font-size: 0.85rem; width:100%; }
-
-        /* 日历与备忘录 */
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 6px; text-align: center; }
-        .day-cell { width: 26px; height: 26px; line-height: 26px; margin: 0 auto; font-size: 0.75rem; position: relative; }
-        .day-cell.has-punch::after { content: ''; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background: var(--text-primary); border-radius: 50%; }
-        .memo-area { width: 100%; min-height: 100px; border: none; background: transparent; font-size: 0.9rem; line-height: 1.5; resize: none; }
-
-        .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); z-index: 3000; backdrop-filter: blur(5px); align-items: center; justify-content: center; }
-        .modal-content { background: white; width: 280px; border-radius: 14px; text-align: center; padding: 20px 0 0; }
-        .modal-input { width: 80%; padding: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 8px; text-align: center; }
+        .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 3000; backdrop-filter: blur(8px); align-items: center; justify-content: center; }
+        .modal-content { background: rgba(255,255,255,0.95); width: 280px; border-radius: 14px; text-align: center; padding: 20px 0 0; animation: popIn 0.2s ease-out; }
+        .modal-input { width: 85%; padding: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 8px; text-align: center; font-size: 1.2rem; }
         .modal-actions { display: flex; border-top: 0.5px solid rgba(60,60,67,0.2); }
-        .modal-btn { flex: 1; padding: 12px; color: var(--primary-blue); background: none; }
+        .modal-btn { flex: 1; padding: 12px; color: var(--primary-blue); background: none; font-size: 1.1rem; border-right: 0.5px solid rgba(60,60,67,0.2); }
+        .modal-btn:last-child { border-right: none; font-weight: 700; }
+        
+        #punchAnim { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); color: white; padding: 20px 40px; border-radius: 20px; z-index: 5000; backdrop-filter: blur(10px); flex-direction: column; align-items: center; }
+        #punchAnim span { font-size: 3rem; margin-bottom: 10px; }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div id="loginOverlay">
     <div class="login-card">
-        <h2 style="margin-top:0">Workspace Login</h2>
-        <input type="text" id="username" class="login-input" placeholder="Username">
-        <input type="password" id="password" class="login-input" placeholder="Password">
-        <button class="login-btn" onclick="checkLogin()">Login</button>
-        <p id="loginError" style="color:red; font-size:12px; margin-top:10px; display:none;">Incorrect credentials</p>
+        <h2 style="margin-top:0; font-weight:800;">Cloud Sync Login</h2>
+        <input type="text" id="username" class="login-input" placeholder="User ID">
+        <input type="password" id="password" class="login-input" placeholder="Passcode">
+        <input type="password" id="ghToken" class="login-input" placeholder="GitHub Token (ghp_...)">
+        <button class="login-btn" onclick="checkLogin()">Login & Sync</button>
+        <p id="loginError" style="color:var(--danger-red); font-size:12px; margin-top:10px; display:none;"></p>
     </div>
 </div>
 
+<div id="punchAnim"><span id="animIcon">✅</span><div id="animText" style="font-weight:600">Recorded</div></div>
+
 <div class="container" id="mainApp">
     <div class="app-header">
-        <h1 style="font-size:1.6rem; font-weight:800; margin:0">Simplify, simplify</h1>
+        <button class="logout-btn" onclick="logout()">Log Out</button>
+        <h1 style="font-size:1.6rem; font-weight:800; margin:0; letter-spacing:-0.5px;">Simplify, simplify</h1>
         <div class="tenure-badge" id="tenureCounter">Day --</div>
     </div>
 
     <div class="card">
         <div class="time-display">
-            <div class="time-zone">
-                <div class="time-label">CST</div>
-                <div class="time-value" id="cstTime">00:00:00</div>
-            </div>
-            <div class="time-zone">
-                <div class="time-label">EST</div>
-                <div class="time-value" id="estTime">00:00:00</div>
-            </div>
+            <div class="time-zone"><div class="time-label">CST (BEIJING)</div><div class="time-value" id="cstTime">00:00:00</div></div>
+            <div class="time-zone"><div class="time-label">EST (NEW YORK)</div><div class="time-value" id="estTime">00:00:00</div></div>
         </div>
         <div class="punch-controls">
             <button class="punch-btn btn-in" onclick="handlePunch('in')">Clock In</button>
             <button class="punch-btn btn-out" onclick="handlePunch('out')">Clock Out</button>
         </div>
-        <div class="status-text" style="text-align:center; font-size:0.85rem; margin-top:12px; color:var(--text-secondary);">
-            <span id="statusText" style="color:var(--text-primary); font-weight:600">--</span> <span id="etaText"></span>
+        <div style="text-align:center; margin-top:12px; font-size:0.9rem;">
+            <span id="statusText" style="font-weight:600">--</span> <span id="etaText" style="color:var(--text-secondary)"></span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Daily Mood</h2>
+        <div class="mood-controls">
+            <button class="mood-emoji" onclick="logMood('😢')">😢</button>
+            <button class="mood-emoji" onclick="logMood('😐')">😐</button>
+            <button class="mood-emoji" onclick="logMood('😀')">😀</button>
         </div>
     </div>
 
     <div class="card">
         <h2>Daily Summary</h2>
-        <div class="stats-row"><span>Work Time</span><span id="valWork">0h 0m (0%)</span></div>
-        <div class="stats-row"><span>Break Time</span><span id="valBreak">0h 0m (0%)</span></div>
+        <div class="stats-row"><span>Work Time</span><span id="valWork" style="font-weight:600; color:var(--primary-blue)">0h 0m 0s</span></div>
+        <div class="stats-row"><span>Break Time</span><span id="valBreak" style="font-weight:600; color:var(--primary-light-blue)">0h 0m 0s</span></div>
         <div class="progress-track" id="progressTrack"></div>
         <button class="punch-btn btn-in" style="width:100%; background:var(--success-green)" id="btnBreak" onclick="handleBreak()">Start Break</button>
+    </div>
+
+    <div class="card">
+        <h2>Focus Timer</h2>
+        <div class="timer-display" id="focusDisplay">00:00:00</div>
+        <div class="timer-controls">
+            <button class="timer-btn" style="background:var(--success-green)" onclick="toggleFocus(true)">Start</button>
+            <button class="timer-btn" style="background:var(--warning-orange)" onclick="toggleFocus(false)">Pause</button>
+            <button class="timer-btn" style="background:var(--danger-red)" onclick="resetFocus()">Reset</button>
+        </div>
     </div>
 
     <div class="card">
@@ -131,7 +159,7 @@
             <div style="flex:1.5;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <span style="font-weight:700">To-do</span>
-                    <button style="background:none; color:var(--primary-blue); font-size:1.4rem;" onclick="openTodoModal()">+</button>
+                    <button style="background:none; color:var(--primary-blue); font-size:1.4rem;" onclick="openModal('todo')">+</button>
                 </div>
                 <ul id="todoList" style="list-style:none; padding:0; margin:0; height:150px; overflow-y:auto; overflow-x:hidden;"></ul>
             </div>
@@ -140,13 +168,13 @@
 
     <div class="card">
         <h2>Memo</h2>
-        <textarea class="memo-area" id="memoInput" placeholder="Write something..." oninput="saveMemo()"></textarea>
+        <textarea class="memo-area" id="memoInput" placeholder="Capture your thoughts..." oninput="saveMemo()"></textarea>
     </div>
 
     <div class="card">
         <h2>Cumulative Stats</h2>
-        <div class="stats-row"><span>Total Work Days</span><span id="totalDays">0</span></div>
-        <div class="stats-row"><span>Total Hours</span><span id="totalHours">0h 0m</span></div>
+        <div class="stats-row"><span>Total Work Days</span><span id="totalDays" style="font-weight:600">0</span></div>
+        <div class="stats-row"><span>Total Hours</span><span id="totalHours" style="font-weight:600">0h 0m</span></div>
     </div>
 
     <div class="card">
@@ -154,57 +182,119 @@
         <div id="historyList" style="max-height:250px; overflow-y:auto; overflow-x:hidden;"></div>
     </div>
 
-    <button class="punch-btn" style="background:#E5E5EA; color:var(--danger-red); width:100%;" ondblclick="fullReset()">Double Tap to Reset</button>
+    <button class="punch-btn" style="background:transparent; color:var(--text-secondary); width:100%; font-size:0.8rem;" ondblclick="openModal('reset')">Double Tap to Reset Data</button>
 </div>
 
-<div id="todoModal" class="modal-backdrop">
+<div id="universalModal" class="modal-backdrop">
     <div class="modal-content">
-        <div style="padding-bottom:15px; font-weight:600">New Task</div>
+        <div id="modalTitle" style="padding-bottom:15px; font-weight:700; font-size:1.1rem;">Title</div>
         <input type="text" id="modalInput" class="modal-input">
         <div class="modal-actions">
-            <button class="modal-btn" onclick="closeTodoModal()">Cancel</button>
-            <button class="modal-btn" style="font-weight:700" onclick="saveTodo()">Save</button>
+            <button class="modal-btn" onclick="closeModal()">Cancel</button>
+            <button class="modal-btn" id="modalConfirmBtn">Confirm</button>
         </div>
     </div>
 </div>
 
 <script>
-const DATA_KEY = 'timeTracker_V20.0_Data'; // 升级到新 Key
-const OLD_KEY = 'timeTracker_V18.2_Data'; // 指定旧版 Key
-const START_DATE = '2022-05-04';
-let appData = { punches: {}, breaks: {}, todos: [], memo: "" };
+// --- 云同步配置 (已按您图片中的路径修改) ---
+let SYNC_CONFIG = {
+    token: "", 
+    repo: "lishengze-collab/simplify-v18-app", 
+    path: "workplace-sync.json"
+};
 
-// 登录验证
-function checkLogin() {
+const DATA_KEY = 'timeTracker_V18.2_Data'; // 沿用旧Key以防丢失数据
+const START_DATE = '2022-05-04';
+const USER = 'lishengze';
+const PASS = '09876123';
+
+let appData = { punches: {}, breaks: {}, todos: [], memo: "", moods: {}, focusState: { running: false, ms: 0 } };
+let uiTimer = null;
+let cloudSha = "";
+
+// --- 登录逻辑 ---
+async function checkLogin() {
     const u = document.getElementById('username').value;
     const p = document.getElementById('password').value;
-    if(u === 'lishengze' && p === '09876123') {
-        document.getElementById('loginOverlay').style.display = 'none';
-        document.getElementById('mainApp').style.display = 'flex';
-        initApp();
+    const token = document.getElementById('ghToken').value;
+
+    if(u === USER && p === PASS) {
+        if(token) {
+            SYNC_CONFIG.token = token;
+            const errorEl = document.getElementById('loginError');
+            errorEl.style.display = 'block';
+            errorEl.style.color = 'blue';
+            errorEl.innerText = "Syncing Cloud Data...";
+            
+            const success = await pullFromCloud();
+            if(!success) {
+                errorEl.style.color = 'red';
+                errorEl.innerText = "Sync Failed. Check Token/Repo.";
+                return;
+            }
+        }
+        sessionStorage.setItem('isLoggedIn', 'true');
+        showApp();
     } else {
-        document.getElementById('loginError').style.display = 'block';
+        const errorEl = document.getElementById('loginError');
+        errorEl.style.display = 'block';
+        errorEl.innerText = "Access Denied";
     }
 }
 
-function initApp() {
-    migrateData(); // 自动执行数据迁移
+// --- GitHub API 同步逻辑 ---
+async function pullFromCloud() {
+    try {
+        const url = `https://api.github.com/repos/${SYNC_CONFIG.repo}/contents/${SYNC_CONFIG.path}`;
+        const resp = await fetch(url, { headers: { "Authorization": `token ${SYNC_CONFIG.token}` } });
+        if (resp.status === 200) {
+            const json = await resp.json();
+            cloudSha = json.sha;
+            const cloudData = JSON.parse(decodeURIComponent(escape(atob(json.content))));
+            localStorage.setItem(DATA_KEY, JSON.stringify(cloudData));
+            return true;
+        } else if (resp.status === 404) { return true; }
+    } catch (e) { console.error(e); }
+    return false;
+}
+
+async function pushToCloud() {
+    if(!SYNC_CONFIG.token) return;
+    try {
+        const url = `https://api.github.com/repos/${SYNC_CONFIG.repo}/contents/${SYNC_CONFIG.path}`;
+        const content = btoa(unescape(encodeURIComponent(JSON.stringify(appData))));
+        const body = { message: "Update Data", content: content, sha: cloudSha };
+        const resp = await fetch(url, {
+            method: "PUT",
+            headers: { "Authorization": `token ${SYNC_CONFIG.token}`, "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        });
+        if(resp.ok) {
+            const resJson = await resp.json();
+            cloudSha = resJson.content.sha;
+        }
+    } catch (e) { console.error(e); }
+}
+
+function saveData() {
+    localStorage.setItem(DATA_KEY, JSON.stringify(appData));
+    clearTimeout(window.syncDebounce);
+    window.syncDebounce = setTimeout(pushToCloud, 2000); 
+}
+
+// --- UI 渲染与功能逻辑 ---
+function showApp() {
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'flex';
     loadData();
-    setInterval(updateClock, 1000);
-    setInterval(calculateStats, 1000);
+    initTenure();
+    if (uiTimer) clearInterval(uiTimer);
+    uiTimer = setInterval(updateLoop, 1000);
+    updateLoop();
     renderCalendar();
     renderTodos();
-    initTenure();
-}
-
-// 核心：自动数据迁移逻辑
-function migrateData() {
-    const newData = localStorage.getItem(DATA_KEY);
-    const oldData = localStorage.getItem(OLD_KEY);
-    if (!newData && oldData) {
-        localStorage.setItem(DATA_KEY, oldData);
-        console.log("V18.2 数据已自动迁移至 V20.0");
-    }
+    renderHistory();
 }
 
 function loadData() {
@@ -212,145 +302,52 @@ function loadData() {
         const raw = localStorage.getItem(DATA_KEY);
         if (raw) {
             const parsed = JSON.parse(raw);
-            // 修复点：确保如果 parsed 是 null 或缺少字段，程序不会崩溃
             appData = {
                 punches: parsed.punches || {},
                 breaks: parsed.breaks || {},
                 todos: parsed.todos || [],
-                memo: parsed.memo || ""  // 如果旧数据没有memo，就给它一个空字符串
+                memo: parsed.memo || "", // 修复Null引用报错
+                moods: parsed.moods || {},
+                focusState: parsed.focusState || { running: false, ms: 0 }
             };
         }
-        
-        // 修复点：确保界面元素存在再赋值
-        const memoInput = document.getElementById('memoInput');
-        if (memoInput) {
-            memoInput.value = appData.memo || "";
-        }
-        console.log("数据加载成功！");
-    } catch (e) {
-        console.error("加载旧数据时出错，已初始化新数据:", e);
-        appData = { punches: {}, breaks: {}, todos: [], memo: "" };
-    }
+        document.getElementById('memoInput').value = appData.memo || "";
+    } catch(e) { console.error(e); }
 }
 
-function saveData() { localStorage.setItem(DATA_KEY, JSON.stringify(appData)); }
+function logout() { sessionStorage.removeItem('isLoggedIn'); location.reload(); }
 
-function updateClock() {
+function updateLoop() {
     const now = new Date();
     document.getElementById('cstTime').innerText = now.toLocaleTimeString('en-GB', {timeZone:'Asia/Shanghai', hour12:false});
     document.getElementById('estTime').innerText = now.toLocaleTimeString('en-GB', {timeZone:'America/New_York', hour12:false});
+    if(appData.focusState.running) {
+        appData.focusState.ms += 1000;
+        document.getElementById('focusDisplay').innerText = formatHMS(appData.focusState.ms);
+    }
+    calculateStats(now);
 }
 
-function isDST(date) {
-    const year = date.getFullYear();
-    const start = new Date(year, 2, 14); start.setDate(14 - start.getDay());
-    const end = new Date(year, 10, 7); end.setDate(7 - end.getDay());
-    return date >= start && date < end;
-}
-
-function calculateStats() {
-    const key = new Date().toLocaleDateString('en-CA', {timeZone:'America/New_York'});
-    const now = new Date();
+function calculateStats(now) {
+    const key = now.toLocaleDateString('en-CA', {timeZone:'America/New_York'});
     const dayPunches = appData.punches[key] || [];
     const dayBreaks = appData.breaks[key] || [];
-
-    let workMs = 0, breakMs = 0, isClockedIn = false, isOnBreak = false;
-
-    dayBreaks.forEach(b => {
-        if (b.end) breakMs += (new Date(b.end) - new Date(b.start));
-        else { breakMs += (now - new Date(b.start)); isOnBreak = true; }
-    });
-
-    let lastIn = null;
-    dayPunches.forEach(p => {
-        if (p.type === 'in') { lastIn = new Date(p.time); isClockedIn = true; }
-        else if (lastIn) { workMs += (new Date(p.time) - lastIn); lastIn = null; isClockedIn = false; }
-    });
-    if (isClockedIn && lastIn) workMs += (now - lastIn);
-
-    const netWorkMs = Math.max(0, workMs - breakMs);
-    const totalSessionMs = workMs; 
-    const workPct = totalSessionMs > 0 ? Math.round((netWorkMs / totalSessionMs) * 100) : 0;
-    const breakPct = totalSessionMs > 0 ? Math.round((breakMs / totalSessionMs) * 100) : 0;
-
-    document.getElementById('valWork').innerText = `${formatDur(netWorkMs)} (${workPct}%)`;
-    document.getElementById('valBreak').innerText = `${formatDur(breakMs)} (${breakPct}%)`;
-    
-    const wp = totalSessionMs > 0 ? (netWorkMs / totalSessionMs) * 100 : 0;
-    document.getElementById('progressTrack').innerHTML = `<div class="bar-work" style="width:${wp}%"></div><div class="bar-break" style="width:${100-wp}%"></div>`;
-
-    const etaEl = document.getElementById('etaText');
+    let bMs = 0, isOnB = false;
+    dayBreaks.forEach(b => { if(b.end) bMs += (new Date(b.end)-new Date(b.start)); else { bMs += (now-new Date(b.start)); isOnB = true; } });
+    let wMs = 0, isIn = false, lastIn = null;
+    dayPunches.forEach(p => { if(p.type==='in'){lastIn=new Date(p.time);isIn=true;} else if(lastIn){wMs+=(new Date(p.time)-lastIn);lastIn=null;isIn=false;} });
+    if(isIn && lastIn) wMs += (now-lastIn);
+    const netW = Math.max(0, wMs - bMs);
+    const workPct = wMs > 0 ? Math.round((netW/wMs)*100) : 0;
+    const breakPct = wMs > 0 ? Math.round((bMs/wMs)*100) : 0;
+    document.getElementById('valWork').innerText = `${formatHMS(netW, true)} (${workPct}%)`;
+    document.getElementById('valBreak').innerText = `${formatHMS(bMs, true)} (${breakPct}%)`;
+    document.getElementById('progressTrack').innerHTML = `<div class="bar-work" style="width:${workPct}%"></div><div class="bar-break" style="width:${breakPct}%"></div>`;
+    const btnB = document.getElementById('btnBreak');
     const statusEl = document.getElementById('statusText');
-    if (isClockedIn && dayPunches.length > 0) {
-        statusEl.innerText = isOnBreak ? "On Break" : "Working";
-        const firstIn = new Date(dayPunches[0].time);
-        const standardDayMs = 8.5 * 60 * 60 * 1000;
-        const finishTime = new Date(firstIn.getTime() + standardDayMs + breakMs);
-        etaEl.innerText = `| ${finishTime.toLocaleTimeString('en-GB', {timeZone:'America/New_York', hour:'2-digit', minute:'2-digit'})}(${finishTime.toLocaleTimeString('en-GB', {timeZone:'Asia/Shanghai', hour:'2-digit', minute:'2-digit'})})`;
-    } else {
-        statusEl.innerText = dayPunches.length > 0 ? "Clocked Out" : "Ready";
-        etaEl.innerText = "";
-    }
+    if(isOnB) { btnB.innerText="End Break"; btnB.style.backgroundColor="var(--warning-orange)"; statusEl.innerHTML="<span style='color:var(--warning-orange)'>On Break</span>"; }
+    else { btnB.innerText="Start Break"; btnB.style.backgroundColor="var(--success-green)"; if(isIn) statusEl.innerHTML="<span style='color:var(--success-green)'>Working</span>"; else statusEl.innerText=dayPunches.length>0?"Clocked Out":"Ready"; }
     updateCumulative();
-    renderHistory();
-}
-
-// 通用滑动逻辑
-let touchStartX = 0;
-function handleSwipeStart(e) { touchStartX = e.touches[0].clientX; }
-function handleSwipeMove(e) {
-    let diff = touchStartX - e.touches[0].clientX;
-    let target = e.currentTarget;
-    if (diff > 20) target.style.transform = `translateX(-${Math.min(diff, 80)}px)`;
-    else target.style.transform = `translateX(0)`;
-}
-function handleSwipeEnd(e) {
-    let diff = touchStartX - e.changedTouches[0].clientX;
-    let target = e.currentTarget;
-    if (diff > 50) target.style.transform = `translateX(-80px)`;
-    else target.style.transform = `translateX(0)`;
-}
-
-function renderTodos() {
-    const list = document.getElementById('todoList');
-    list.innerHTML = '';
-    appData.todos.forEach((t, i) => {
-        const li = document.createElement('li');
-        li.className = 'swipe-item';
-        li.style.borderBottom = '0.5px solid var(--border-color)';
-        li.style.padding = '10px 0';
-        li.setAttribute('ontouchstart', 'handleSwipeStart(event)');
-        li.setAttribute('ontouchmove', 'handleSwipeMove(event)');
-        li.setAttribute('ontouchend', 'handleSwipeEnd(event)');
-        li.innerHTML = `
-            <input type="checkbox" style="margin-right:10px" ${t.done?'checked':''} onchange="toggleTodo(${i})">
-            <span style="flex:1; font-size:0.9rem; ${t.done?'text-decoration:line-through;color:#8E':''}">${t.text}</span>
-            <div class="delete-action" onclick="deleteTodo(${i})">Delete</div>
-        `;
-        list.appendChild(li);
-    });
-}
-
-function renderHistory() {
-    const container = document.getElementById('historyList');
-    const oldHtml = container.innerHTML;
-    const keys = Object.keys(appData.punches).sort().reverse();
-    let newHtml = '';
-    keys.forEach(k => {
-        const d = new Date(k);
-        newHtml += `<div class="history-date-header">${d.toLocaleDateString('en-GB').replace(/\//g,'')}</div>`;
-        appData.punches[k].forEach((p, idx) => {
-            const time = new Date(p.time).toLocaleTimeString('en-GB', {timeZone:'Asia/Shanghai', hour12:false});
-            newHtml += `
-                <div class="swipe-item" ontouchstart="handleSwipeStart(event)" ontouchmove="handleSwipeMove(event)" ontouchend="handleSwipeEnd(event)">
-                    <div class="history-row">
-                        <span style="color:${p.type==='in'?'var(--primary-blue)':'var(--danger-red)'}">${p.type.toUpperCase()}</span> at ${time}
-                    </div>
-                    <div class="delete-action" onclick="deletePunch('${k}', ${idx})">Delete</div>
-                </div>`;
-        });
-    });
-    if(newHtml !== oldHtml) container.innerHTML = newHtml;
 }
 
 function handlePunch(type) {
@@ -358,42 +355,28 @@ function handlePunch(type) {
     if (!appData.punches[key]) appData.punches[key] = [];
     appData.punches[key].push({ type, time: new Date().toISOString() });
     saveData();
+    calculateStats(new Date());
+    renderHistory();
+    renderCalendar();
+    const anim = document.getElementById('punchAnim');
+    document.getElementById('animIcon').innerText = type==='in'?'💼':'🏡';
+    document.getElementById('animText').innerText = type==='in'?'Clocked In':'Clocked Out';
+    anim.style.display = 'flex';
+    setTimeout(() => { anim.style.display = 'none'; }, 1500);
 }
 
-function deletePunch(key, idx) { appData.punches[key].splice(idx, 1); if(appData.punches[key].length===0) delete appData.punches[key]; saveData(); renderHistory(); }
 function handleBreak() {
     const key = new Date().toLocaleDateString('en-CA', {timeZone:'America/New_York'});
     if (!appData.breaks[key]) appData.breaks[key] = [];
     const active = appData.breaks[key].find(b => !b.end);
-    if (active) active.end = new Date().toISOString();
+    if(active) active.end = new Date().toISOString();
     else appData.breaks[key].push({ start: new Date().toISOString(), end: null });
-    document.getElementById('btnBreak').innerText = active ? "Start Break" : "End Break";
     saveData();
 }
 
-function saveTodo() {
-    const val = document.getElementById('modalInput').value;
-    if(val) { appData.todos.push({text:val, done:false}); saveData(); renderTodos(); closeTodoModal(); }
-}
-function deleteTodo(i) { appData.todos.splice(i, 1); saveData(); renderTodos(); }
-function toggleTodo(i) { appData.todos[i].done = !appData.todos[i].done; saveData(); renderTodos(); }
-function openTodoModal() { document.getElementById('todoModal').style.display='flex'; }
-function closeTodoModal() { document.getElementById('todoModal').style.display='none'; }
-function saveMemo() { appData.memo = document.getElementById('memoInput').value; saveData(); }
-
-function updateCumulative() {
-    let days = 0, totalMs = 0;
-    Object.keys(appData.punches).forEach(k => {
-        days++;
-        let lastIn = null;
-        appData.punches[k].forEach(p => {
-            if(p.type==='in') lastIn = new Date(p.time);
-            else if(lastIn) { totalMs += (new Date(p.time) - lastIn); lastIn = null; }
-        });
-    });
-    document.getElementById('totalDays').innerText = days;
-    document.getElementById('totalHours').innerText = formatDur(totalMs);
-}
+function toggleFocus(start) { appData.focusState.running = start; saveData(); }
+function resetFocus() { appData.focusState.running = false; appData.focusState.ms = 0; saveData(); document.getElementById('focusDisplay').innerText = "00:00:00"; }
+function logMood(emoji) { const key = new Date().toLocaleDateString('en-CA', {timeZone:'America/New_York'}); if(!appData.moods[key]) appData.moods[key]=[]; appData.moods[key].push(emoji); saveData(); alert("Mood Saved"); }
 
 function renderCalendar() {
     const grid = document.getElementById('calGrid');
@@ -405,23 +388,63 @@ function renderCalendar() {
         cell.className = 'day-cell';
         cell.innerText = d;
         const k = new Date(now.getFullYear(), now.getMonth(), d).toLocaleDateString('en-CA', {timeZone:'America/New_York'});
-        if(appData.punches[k]) cell.classList.add('has-punch');
+        if(d < now.getDate()) cell.classList.add('past');
+        if(d === now.getDate()) cell.classList.add('today');
+        if(appData.punches[k] && appData.punches[k].length > 0) cell.classList.add('has-punch');
         grid.appendChild(cell);
     }
 }
 
-function formatDur(ms) {
-    const h = Math.floor(ms / 3600000);
-    const m = Math.floor((ms % 3600000) / 60000);
-    return `${h}h ${m}m`;
+function renderHistory() {
+    const list = document.getElementById('historyList');
+    const keys = Object.keys(appData.punches).sort().reverse();
+    let html = '';
+    keys.forEach(k => {
+        const dp = k.split('-'); html += `<div class="history-date-header">${dp[2]}/${dp[1]}/${dp[0].slice(2)}</div>`;
+        appData.punches[k].forEach((p, idx) => {
+            const time = new Date(p.time).toLocaleTimeString('en-GB', {timeZone:'Asia/Shanghai', hour12:false, hour:'2-digit', minute:'2-digit'});
+            html += `<div class="swipe-item" ontouchstart="ts(event)" ontouchmove="tm(event)" ontouchend="te(event)"><div class="history-row"><span style="color:${p.type==='in'?'var(--primary-blue)':'var(--danger-red)'}; font-weight:600">${p.type.toUpperCase()}</span><span>${time}</span></div><div class="delete-action" onclick="delPunch('${k}', ${idx})">Delete</div></div>`;
+        });
+    });
+    list.innerHTML = html;
 }
 
-function initTenure() {
-    const diff = Math.floor((new Date() - new Date(START_DATE)) / 86400000);
-    document.getElementById('tenureCounter').innerText = `Day ${diff}`;
-}
+let startX = 0;
+function ts(e) { startX = e.touches[0].clientX; }
+function tm(e) { let diff = startX - e.touches[0].clientX; if(diff > 20) e.currentTarget.style.transform = `translateX(-${Math.min(diff, 80)}px)`; }
+function te(e) { let diff = startX - e.changedTouches[0].clientX; if(diff > 50) e.currentTarget.style.transform = `translateX(-80px)`; else e.currentTarget.style.transform = `translateX(0)`; }
 
-function fullReset() { localStorage.clear(); location.reload(); }
+function openModal(type) {
+    const m = document.getElementById('universalModal');
+    const i = document.getElementById('modalInput');
+    const b = document.getElementById('modalConfirmBtn');
+    m.style.display = 'flex'; i.value = '';
+    if(type==='todo'){
+        document.getElementById('modalTitle').innerText="New Task";
+        b.onclick=()=>{if(i.value){appData.todos.push({text:i.value,done:false});saveData();renderTodos();closeModal();}};
+    } else {
+        document.getElementById('modalTitle').innerText="Reset Data (0000)";
+        b.onclick=()=>{if(i.value==='0000'){localStorage.clear();location.reload();}};
+    }
+}
+function closeModal() { document.getElementById('universalModal').style.display = 'none'; }
+function renderTodos() {
+    const l = document.getElementById('todoList'); l.innerHTML = '';
+    appData.todos.forEach((t, i) => {
+        l.innerHTML += `<li class="swipe-item" ontouchstart="ts(event)" ontouchmove="tm(event)" ontouchend="te(event)" style="padding:12px 0; border-bottom:0.5px solid #eee"><input type="checkbox" ${t.done?'checked':''} onchange="toggleTodo(${i})"><span style="flex:1; margin-left:10px; ${t.done?'text-decoration:line-through;color:#aaa':''}">${t.text}</span><div class="delete-action" onclick="delTodo(${i})">Delete</div></li>`;
+    });
+}
+function toggleTodo(i) { appData.todos[i].done = !appData.todos[i].done; saveData(); renderTodos(); }
+function delTodo(i) { appData.todos.splice(i, 1); saveData(); renderTodos(); }
+function delPunch(k, i) { appData.punches[k].splice(i, 1); if(!appData.punches[k].length) delete appData.punches[k]; saveData(); renderHistory(); renderCalendar(); }
+function saveMemo() { appData.memo = document.getElementById('memoInput').value; saveData(); }
+function formatHMS(ms, sSec=false) { const s=Math.floor(ms/1000); const h=Math.floor(s/3600); const m=Math.floor((s%3600)/60); return sSec ? `${h}h ${m}m ${s%60}s` : `${h}h ${m}m`; }
+function updateCumulative() {
+    let d=0, ms=0;
+    Object.keys(appData.punches).forEach(k => { d++; let l=null; appData.punches[k].forEach(p=>{if(p.type==='in')l=new Date(p.time);else if(l){ms+=(new Date(p.time)-l);l=null;}}); });
+    document.getElementById('totalDays').innerText = d; document.getElementById('totalHours').innerText = formatHMS(ms);
+}
+function initTenure() { document.getElementById('tenureCounter').innerText = `Day ${Math.floor((new Date() - new Date(START_DATE))/86400000)}`; }
 </script>
 </body>
 </html>
