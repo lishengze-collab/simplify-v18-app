@@ -22,9 +22,7 @@ body{margin:0;background:var(--bg);display:flex;justify-content:center;align-ite
 <div id="loginScreen" class="container" style="display:flex;justify-content:center;align-items:center;min-height:100vh">
  <div class="card" style="text-align:center;width:260px">
   <h3 style="margin:0">LSZ</h3>
-  <input id="username" placeholder="User ID" style="width:100%;padding:10px;border-radius:10px;border:none;background:#eee" value="lishengze"/>
-  <input id="password" type="password" placeholder="Passcode" style="width:100%;padding:10px;margin-top:6px;border-radius:10px;border:none;background:#eee" value="09876123"/>
-  <button class="btn blue" style="width:100%;margin-top:10px" onclick="doLogin()">Sign In</button>
+  <button class="btn blue" style="width:100%;margin-top:10px" onclick="doLogin()">Enter App</button>
   <button class="btn" style="width:100%;margin-top:8px;background:#000" onclick="passkeyLogin()">Face ID / Touch ID</button>
  </div>
 </div>
@@ -58,10 +56,9 @@ body{margin:0;background:var(--bg);display:flex;justify-content:center;align-ite
 </div>
 
 <script>
-const AUTH={u:'lishengze',p:'09876123'},DB_KEY='WP_V24_DB';let db={punch:{},break:{}};
-
-function doLogin(){if(username.value===AUTH.u&&password.value===AUTH.p){loginScreen.style.display='none';appScreen.style.display='flex';loadData();tick();setInterval(tick,1000);}}
-function passkeyLogin(){if(localStorage.getItem('lsz_logged'))doLogin();else alert('Face ID 未启用，请首次使用密码登录');}
+const DB_KEY='WP_V24_DB';let db={punch:{},break:{}};
+function doLogin(){loginScreen.style.display='none';appScreen.style.display='flex';loadData();tick();setInterval(tick,1000);}
+function passkeyLogin(){doLogin();}
 function loadData(){const j=localStorage.getItem(DB_KEY);if(j)db=JSON.parse(j);}
 function saveData(){localStorage.setItem(DB_KEY,JSON.stringify(db));}
 function tick(){const n=new Date();sh.innerText=n.toLocaleTimeString('en-GB',{timeZone:'Asia/Shanghai'});ny.innerText=n.toLocaleTimeString('en-GB',{timeZone:'America/New_York'});date.innerText=n.toLocaleDateString('en-GB');calcSummary();}
