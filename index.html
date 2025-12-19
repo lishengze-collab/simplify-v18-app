@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>N-3.1</title>
+    <title>N-3.3</title>
     <style>
         :root {
             --ios-bg: #F2F2F7;
@@ -19,45 +19,28 @@
         body { margin: 0; background: var(--ios-bg); color: #1c1c1e; font-family: var(--font); display: flex; justify-content: center; overflow-x: hidden; }
         .container { width: 100%; max-width: 390px; padding: 20px 16px 100px; display: flex; flex-direction: column; gap: 14px; }
         .card { background: var(--ios-card); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 20px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 0.5px solid rgba(255,255,255,0.5); }
-        
         .day-counter { text-align: center; font-size: 17px; font-weight: 700; padding: 5px 0; }
         .clock-grid { display: flex; justify-content: space-around; text-align: center; }
         .clock-label { font-size: 10px; color: var(--ios-gray); font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
         .clock-time { font-size: 24px; font-weight: 200; font-variant-numeric: tabular-nums; }
-
         .est-box { text-align: center; margin-bottom: 16px; padding: 12px; background: rgba(52,199,89,0.08); border-radius: 14px; border: 0.5px dashed var(--ios-green); }
         .btn-group { display: flex; gap: 10px; }
         .btn { flex: 1; padding: 14px; border: none; border-radius: 14px; font-weight: 600; font-size: 15px; color: #fff; cursor: pointer; }
         .btn:disabled { background: #d1d1d6 !important; }
         .section-title { font-size: 10px; color: var(--ios-gray); font-weight: 700; margin-bottom: 10px; text-transform: uppercase; }
         .stat-row, .hist-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; }
-
-        /* 心情选择与滚轮区 */
-        .mood-entry-btns { display: flex; justify-content: space-around; font-size: 28px; padding-bottom: 15px; }
-        .wheel-year-month { font-size: 11px; font-weight: 700; text-align: center; color: var(--ios-blue); margin-bottom: 8px; }
-        .wheel-outer { position: relative; padding: 10px 0; border-top: 0.5px solid #eee; }
-        .wheel-container { width: 100%; height: 50px; overflow-x: scroll; display: flex; align-items: center; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
-        .wheel-container::-webkit-scrollbar { display: none; }
-        .wheel-date-item { min-width: 70px; text-align: center; transition: all 0.2s; scroll-snap-align: center; color: var(--ios-gray); font-size: 14px; }
-        .wheel-date-item.active { color: var(--ios-blue); transform: scale(1.3); font-weight: 800; }
-        
-        .mood-display-area { min-height: 120px; border-top: 0.5px solid #eee; padding-top: 10px; margin-top: 5px; }
-        .mood-log-item { font-size: 14px; display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 0.3px solid #f0f0f5; }
-        .mood-time { color: var(--ios-gray); font-size: 11px; font-variant-numeric: tabular-nums; }
         .edit-icon { font-size: 10px; color: var(--ios-blue); margin-left: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
 <div class="container" id="mainApp">
     <div class="card"><div class="day-counter" id="dayDisplay">Day -- at TDS</div></div>
-
     <div class="card">
         <div class="clock-grid">
             <div><div class="clock-label">Beijing</div><div class="clock-time" id="shTime">00:00:00</div></div>
             <div><div class="clock-label">New York</div><div class="clock-time" id="nyTime">00:00:00</div></div>
         </div>
     </div>
-
     <div class="card">
         <div class="est-box">
             <div style="font-size:10px; color:var(--ios-gray); font-weight:700;">BJ EST. OFF-DUTY (8.5H)</div>
@@ -68,44 +51,25 @@
             <button id="outBtn" class="btn" style="background:var(--ios-red)" onclick="doPunch('OUT')">Clock OUT</button>
         </div>
     </div>
-
     <div class="card">
         <div class="section-title">Data Insights</div>
         <div id="statsBox"></div>
     </div>
-
-    <div class="card">
-        <div class="mood-entry-btns">
-            <span onclick="addMood('😃')">😃</span><span onclick="addMood('😐')">😐</span><span onclick="addMood('😔')">😔</span>
-            <span onclick="addMood('custom')" style="font-size:18px; font-weight:bold; color:var(--ios-gray); background:#f0f0f5; padding:5px 12px; border-radius:12px;">+</span>
-        </div>
-        
-        <div class="wheel-outer">
-            <div id="wheelHeader" class="wheel-year-month">Loading...</div>
-            <div id="dateWheel" class="wheel-container" onscroll="handleWheelScroll()"></div>
-        </div>
-
-        <div id="moodDisplayArea" class="mood-display-area"></div>
-    </div>
-
     <div class="card">
         <div class="section-title">Punch History</div>
         <div id="punchHistory"></div>
     </div>
-
-    <div style="text-align:center; color:var(--ios-gray); font-size:9px; margin-top:20px; letter-spacing:1px;">N-3.1 • IMMUTABLE LEDGER</div>
+    <div style="text-align:center; color:var(--ios-gray); font-size:9px; margin-top:20px; letter-spacing:1px;">N-3.3 • IMMUTABLE LEDGER</div>
 </div>
-
 <script>
 const CFG = { token: "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", repo: "lishengze-collab/simplify-v18-app", path: "workplace-sync.json", start: "2022/05/04" };
-let db = { punches: {}, moods: [] };
+let db = { punches: {} };
 let cloudSha = "";
 const LOCAL_KEY = "TDS_V25_SECURE_STORAGE";
-let selectedDateKey = "";
 
 window.onload = async () => { await pull(); init(); };
-function init() { loadLocal(); setInterval(tick, 1000); buildWheel(); renderAll(); }
-function loadLocal() { const data = localStorage.getItem(LOCAL_KEY); if(data) db = { ...db, ...JSON.parse(data) }; if(!db.moods) db.moods = []; }
+function init() { loadLocal(); setInterval(tick, 1000); renderAll(); }
+function loadLocal() { const data = localStorage.getItem(LOCAL_KEY); if(data) { const parsed = JSON.parse(data); db.punches = parsed.punches || {}; } }
 function save() { localStorage.setItem(LOCAL_KEY, JSON.stringify(db)); setTimeout(push, 2000); }
 
 async function pull() { 
@@ -113,8 +77,8 @@ async function pull() {
         const r = await fetch(`https://api.github.com/repos/${CFG.repo}/contents/${CFG.path}`, { headers: { "Authorization": `token ${CFG.token}`, "Cache-Control": "no-cache" } }); 
         if(r.ok) { 
             const j = await r.json(); cloudSha = j.sha; 
-            db = JSON.parse(decodeURIComponent(escape(atob(j.content)))); 
-            localStorage.setItem(LOCAL_KEY, JSON.stringify(db)); 
+            const remote = JSON.parse(decodeURIComponent(escape(atob(j.content)))); 
+            db.punches = remote.punches || {};
             renderAll();
         } 
     } catch(e) {} 
@@ -123,8 +87,7 @@ async function pull() {
 async function push() { 
     try { 
         const content = btoa(unescape(encodeURIComponent(JSON.stringify(db)))); 
-        const r = await fetch(`https://api.github.com/repos/${CFG.repo}/contents/${CFG.path}`, { method: "PUT", headers: { "Authorization": `token ${CFG.token}`, "Content-Type": "application/json" }, body: JSON.stringify({ message: "N-3.1 Update", content, sha: cloudSha }) }); 
-        if(r.ok) { const j = await r.json(); cloudSha = j.content.sha; } 
+        await fetch(`https://api.github.com/repos/${CFG.repo}/contents/${CFG.path}`, { method: "PUT", headers: { "Authorization": `token ${CFG.token}`, "Content-Type": "application/json" }, body: JSON.stringify({ message: "N-3.3 Ledger Sync", content, sha: cloudSha }) }); 
     } catch(e) {} 
 }
 
@@ -134,7 +97,6 @@ function tick() {
     document.getElementById('nyTime').innerText = now.toLocaleTimeString('en-GB', { timeZone: 'America/New_York' });
     const diffDays = Math.floor((now - new Date(CFG.start)) / (1000 * 60 * 60 * 24)) + 1;
     document.getElementById('dayDisplay').innerText = `Day ${diffDays} at TDS`;
-
     const k = getK(now);
     const todayData = db.punches[k] || [];
     const firstIn = todayData.find(p => p.type === 'IN');
@@ -144,97 +106,9 @@ function tick() {
         if (m >= 60) { h += 1; m -= 60; }
         h = (h + 8) % 24;
         document.getElementById('estOut').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-    } else { document.getElementById('estOut').innerText = "--:--"; }
+    }
     document.getElementById('inBtn').disabled = todayData.some(p => p.type === 'IN');
     document.getElementById('outBtn').disabled = !todayData.some(p => p.type === 'IN') || todayData.some(p => p.type === 'OUT');
-}
-
-function doPunch(type) { const k = getK(new Date()); if(!db.punches[k]) db.punches[k] = []; db.punches[k].push({ type, time: Date.now() }); save(); renderAll(); }
-
-function adjustTime(dateKey) {
-    const todayP = db.punches[dateKey];
-    const inIdx = todayP.findIndex(p => p.type === 'IN');
-    if (inIdx === -1) return;
-    const newT = prompt("Adjust IN time (HH:mm):", "09:30");
-    if (!newT || !newT.includes(':')) return;
-    const [h, m] = newT.split(':').map(Number);
-    const original = new Date(todayP[inIdx].time);
-    const utcTime = Date.UTC(original.getUTCFullYear(), original.getUTCMonth(), original.getUTCDate(), h - 8, m, 0, 0);
-    todayP[inIdx].time = utcTime;
-    save(); renderAll();
-}
-
-// 构建滚轮
-function buildWheel() {
-    const wheel = document.getElementById('dateWheel');
-    wheel.innerHTML = "";
-    const today = new Date();
-    // 生成最近 30 天，从右向左排列（最右侧是今天）
-    for(let i=29; i>=0; i--) {
-        const d = new Date(); d.setDate(today.getDate() - i);
-        const k = getK(d);
-        const item = document.createElement('div');
-        item.className = 'wheel-date-item';
-        item.dataset.key = k;
-        item.dataset.full = d.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long' });
-        item.innerText = d.getDate() + "日";
-        wheel.appendChild(item);
-    }
-    // 默认定位到今天（最右侧）
-    setTimeout(() => {
-        wheel.scrollLeft = wheel.scrollWidth;
-        handleWheelScroll();
-    }, 200);
-}
-
-function handleWheelScroll() {
-    const wheel = document.getElementById('dateWheel');
-    const items = document.querySelectorAll('.wheel-date-item');
-    const containerCenter = wheel.offsetLeft + (wheel.offsetWidth / 2);
-    
-    let closest = items[0];
-    let minDiff = Infinity;
-
-    items.forEach(item => {
-        const itemCenter = item.offsetLeft - wheel.scrollLeft + (item.offsetWidth / 2);
-        const diff = Math.abs(containerCenter - itemCenter);
-        item.classList.remove('active');
-        if (diff < minDiff) { minDiff = diff; closest = item; }
-    });
-
-    closest.classList.add('active');
-    if (selectedDateKey !== closest.dataset.key) {
-        selectedDateKey = closest.dataset.key;
-        document.getElementById('wheelHeader').innerText = closest.dataset.full;
-        renderMoods();
-    }
-}
-
-function addMood(m) {
-    if(m === 'custom') m = prompt("Mood Emoji:");
-    if(!m) return;
-    const now = new Date();
-    const dateK = getK(now);
-    const timeK = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    
-    // 插入新心情
-    db.moods.unshift({ date: dateK, time: timeK, m });
-    save();
-    
-    // 强制滚轮回到“今天”并刷新
-    const wheel = document.getElementById('dateWheel');
-    wheel.scrollTo({ left: wheel.scrollWidth, behavior: 'smooth' });
-    renderMoods();
-}
-
-function renderMoods() {
-    const area = document.getElementById('moodDisplayArea');
-    const filtered = db.moods.filter(i => i.date === selectedDateKey).slice(0, 30);
-    if(filtered.length === 0) { 
-        area.innerHTML = "<div style='color:#ccc;text-align:center;padding-top:40px;font-size:12px;'>No records for this day</div>"; 
-        return; 
-    }
-    area.innerHTML = filtered.map(i => `<div class="mood-log-item"><span>${i.m}</span><span class="mood-time">${i.time}</span></div>`).join('');
 }
 
 function calculateStats() {
@@ -242,7 +116,6 @@ function calculateStats() {
     const curMonth = now.getMonth(), curYear = now.getFullYear();
     let mDays = 0, mHours = 0, yDays = 0, yHours = 0;
     let earliestIn = 24, latestIn = -1, maxWork = 0;
-
     Object.keys(db.punches).forEach(k => {
         const dayP = db.punches[k];
         const pDate = new Date(dayP[0].time);
@@ -267,13 +140,32 @@ function calculateStats() {
             }
         }
     });
-
     const fT = (h) => h === 24 || h === -1 ? "--:--" : `${Math.floor(h).toString().padStart(2,'0')}:${Math.floor((h%1)*60).toString().padStart(2,'0')}`;
     document.getElementById('statsBox').innerHTML = `
-        <div class="stat-row"><span>Month Progress</span><span>${mDays}d / ${mHours.toFixed(1)}h</span></div>
-        <div class="stat-row"><span>BJ IN (Min/Max)</span><span>${fT(earliestIn)} / ${fT(latestIn)}</span></div>
+        <div class="stat-row"><span>Monthly Progress</span><span>${mDays}d / ${mHours.toFixed(1)}h</span></div>
+        <div class="stat-row"><span>In (Early/Late)</span><span>${fT(earliestIn)} / ${fT(latestIn)}</span></div>
         <div class="stat-row"><span>Yearly Total</span><span>${yDays}d / ${yHours.toFixed(1)}h</span></div>
-        <div class="stat-row"><span>Record Shift</span><span>${maxWork.toFixed(1)}h</span></div>`;
+        <div class="stat-row"><span>Peak Duration</span><span>${maxWork.toFixed(1)}h</span></div>`;
+}
+
+function doPunch(type) { 
+    const k = getK(new Date()); 
+    if(!db.punches[k]) db.punches[k] = []; 
+    db.punches[k].push({ type, time: Date.now() }); 
+    save(); renderAll(); 
+}
+
+function adjustTime(dateKey) {
+    const todayP = db.punches[dateKey];
+    const inIdx = todayP.findIndex(p => p.type === 'IN');
+    if (inIdx === -1) return;
+    const newT = prompt("Adjust IN time (HH:mm):", "09:30");
+    if (!newT || !newT.includes(':')) return;
+    const [h, m] = newT.split(':').map(Number);
+    const original = new Date(todayP[inIdx].time);
+    const utcTime = Date.UTC(original.getUTCFullYear(), original.getUTCMonth(), original.getUTCDate(), h - 8, m, 0, 0);
+    todayP[inIdx].time = utcTime;
+    save(); renderAll();
 }
 
 function renderPunches() {
@@ -293,7 +185,7 @@ function renderPunches() {
 }
 
 function getK(d) { return d.toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
-function renderAll() { renderPunches(); renderMoods(); calculateStats(); }
+function renderAll() { renderPunches(); calculateStats(); }
 </script>
 </body>
 </html>
