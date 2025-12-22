@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>N-3.3</title>
+    <title>N-4</title>
     <style>
         :root {
             --ios-bg: #F2F2F7;
@@ -28,19 +28,25 @@
         .btn { flex: 1; padding: 14px; border: none; border-radius: 14px; font-weight: 600; font-size: 15px; color: #fff; cursor: pointer; }
         .btn:disabled { background: #d1d1d6 !important; }
         .section-title { font-size: 10px; color: var(--ios-gray); font-weight: 700; margin-bottom: 10px; text-transform: uppercase; }
-        .stat-row, .hist-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; }
-        .edit-icon { font-size: 10px; color: var(--ios-blue); margin-left: 5px; cursor: pointer; }
+        
+        /* 优化后的历史记录样式 */
+        .hist-date { font-size: 12px; font-weight: 700; color: var(--ios-blue); margin-top: 10px; border-bottom: 0.5px solid #eee; padding-bottom: 4px; }
+        .hist-row { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; align-items: center; }
+        .hist-dur { font-weight: 600; color: var(--ios-gray); }
+        .edit-icon { font-size: 12px; color: var(--ios-blue); margin-left: 4px; cursor: pointer; opacity: 0.8; vertical-align: middle; }
     </style>
 </head>
 <body>
 <div class="container" id="mainApp">
     <div class="card"><div class="day-counter" id="dayDisplay">Day -- at TDS</div></div>
+    
     <div class="card">
         <div class="clock-grid">
             <div><div class="clock-label">Beijing</div><div class="clock-time" id="shTime">00:00:00</div></div>
             <div><div class="clock-label">New York</div><div class="clock-time" id="nyTime">00:00:00</div></div>
         </div>
     </div>
+    
     <div class="card">
         <div class="est-box">
             <div style="font-size:10px; color:var(--ios-gray); font-weight:700;">BJ EST. OFF-DUTY (8.5H)</div>
@@ -51,16 +57,15 @@
             <button id="outBtn" class="btn" style="background:var(--ios-red)" onclick="doPunch('OUT')">Clock OUT</button>
         </div>
     </div>
-    <div class="card">
-        <div class="section-title">Data Insights</div>
-        <div id="statsBox"></div>
-    </div>
+    
     <div class="card">
         <div class="section-title">Punch History</div>
         <div id="punchHistory"></div>
     </div>
-    <div style="text-align:center; color:var(--ios-gray); font-size:9px; margin-top:20px; letter-spacing:1px;">N-3.3 • IMMUTABLE LEDGER</div>
+    
+    <div style="text-align:center; color:var(--ios-gray); font-size:9px; margin-top:20px; letter-spacing:1px;">N-4 • IMMUTABLE LEDGER</div>
 </div>
+
 <script>
 const CFG = { token: "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", repo: "lishengze-collab/simplify-v18-app", path: "workplace-sync.json", start: "2022/05/04" };
 let db = { punches: {} };
@@ -68,7 +73,7 @@ let cloudSha = "";
 const LOCAL_KEY = "TDS_V25_SECURE_STORAGE";
 
 window.onload = async () => { await pull(); init(); };
-function init() { loadLocal(); setInterval(tick, 1000); renderAll(); }
+function init() { loadLocal(); setInterval(tick, 1000); renderPunches(); }
 function loadLocal() { const data = localStorage.getItem(LOCAL_KEY); if(data) { const parsed = JSON.parse(data); db.punches = parsed.punches || {}; } }
 function save() { localStorage.setItem(LOCAL_KEY, JSON.stringify(db)); setTimeout(push, 2000); }
 
@@ -79,7 +84,7 @@ async function pull() {
             const j = await r.json(); cloudSha = j.sha; 
             const remote = JSON.parse(decodeURIComponent(escape(atob(j.content)))); 
             db.punches = remote.punches || {};
-            renderAll();
+            renderPunches();
         } 
     } catch(e) {} 
 }
@@ -87,7 +92,7 @@ async function pull() {
 async function push() { 
     try { 
         const content = btoa(unescape(encodeURIComponent(JSON.stringify(db)))); 
-        await fetch(`https://api.github.com/repos/${CFG.repo}/contents/${CFG.path}`, { method: "PUT", headers: { "Authorization": `token ${CFG.token}`, "Content-Type": "application/json" }, body: JSON.stringify({ message: "N-3.3 Ledger Sync", content, sha: cloudSha }) }); 
+        await fetch(`https://api.github.com/repos/${CFG.repo}/contents/${CFG.path}`, { method: "PUT", headers: { "Authorization": `token ${CFG.token}`, "Content-Type": "application/json" }, body: JSON.stringify({ message: "N-4 Sync", content, sha: cloudSha }) }); 
     } catch(e) {} 
 }
 
@@ -97,6 +102,7 @@ function tick() {
     document.getElementById('nyTime').innerText = now.toLocaleTimeString('en-GB', { timeZone: 'America/New_York' });
     const diffDays = Math.floor((now - new Date(CFG.start)) / (1000 * 60 * 60 * 24)) + 1;
     document.getElementById('dayDisplay').innerText = `Day ${diffDays} at TDS`;
+    
     const k = getK(now);
     const todayData = db.punches[k] || [];
     const firstIn = todayData.find(p => p.type === 'IN');
@@ -111,48 +117,11 @@ function tick() {
     document.getElementById('outBtn').disabled = !todayData.some(p => p.type === 'IN') || todayData.some(p => p.type === 'OUT');
 }
 
-function calculateStats() {
-    const now = new Date();
-    const curMonth = now.getMonth(), curYear = now.getFullYear();
-    let mDays = 0, mHours = 0, yDays = 0, yHours = 0;
-    let earliestIn = 24, latestIn = -1, maxWork = 0;
-    Object.keys(db.punches).forEach(k => {
-        const dayP = db.punches[k];
-        const pDate = new Date(dayP[0].time);
-        const inT = dayP.find(p => p.type === 'IN'), outT = dayP.find(p => p.type === 'OUT');
-        if (inT) {
-            const inBJ = new Date(inT.time).getUTCHours() + 8 + (new Date(inT.time).getUTCMinutes()/60);
-            const hr = inBJ % 24;
-            if (pDate.getFullYear() === curYear) {
-                yDays++;
-                if (pDate.getMonth() === curMonth) {
-                    mDays++;
-                    if (hr < earliestIn) earliestIn = hr;
-                    if (hr > latestIn) latestIn = hr;
-                }
-            }
-            if (outT) {
-                const diff = (outT.time - inT.time) / 3600000;
-                if (diff > 0) {
-                    if (pDate.getFullYear() === curYear) { yHours += diff; if (pDate.getMonth() === curMonth) mHours += diff; }
-                    if (diff > maxWork) maxWork = diff;
-                }
-            }
-        }
-    });
-    const fT = (h) => h === 24 || h === -1 ? "--:--" : `${Math.floor(h).toString().padStart(2,'0')}:${Math.floor((h%1)*60).toString().padStart(2,'0')}`;
-    document.getElementById('statsBox').innerHTML = `
-        <div class="stat-row"><span>Monthly Progress</span><span>${mDays}d / ${mHours.toFixed(1)}h</span></div>
-        <div class="stat-row"><span>In (Early/Late)</span><span>${fT(earliestIn)} / ${fT(latestIn)}</span></div>
-        <div class="stat-row"><span>Yearly Total</span><span>${yDays}d / ${yHours.toFixed(1)}h</span></div>
-        <div class="stat-row"><span>Peak Duration</span><span>${maxWork.toFixed(1)}h</span></div>`;
-}
-
 function doPunch(type) { 
     const k = getK(new Date()); 
     if(!db.punches[k]) db.punches[k] = []; 
     db.punches[k].push({ type, time: Date.now() }); 
-    save(); renderAll(); 
+    save(); renderPunches(); 
 }
 
 function adjustTime(dateKey) {
@@ -165,27 +134,60 @@ function adjustTime(dateKey) {
     const original = new Date(todayP[inIdx].time);
     const utcTime = Date.UTC(original.getUTCFullYear(), original.getUTCMonth(), original.getUTCDate(), h - 8, m, 0, 0);
     todayP[inIdx].time = utcTime;
-    save(); renderAll();
+    save(); renderPunches();
 }
 
 function renderPunches() {
     const list = document.getElementById('punchHistory');
-    const keys = Object.keys(db.punches).sort().reverse().slice(0, 5);
+    const keys = Object.keys(db.punches).sort().reverse().slice(0, 15); // Show last 15 days
     list.innerHTML = "";
+    
+    const fmtTime = (ts) => new Date(ts).toLocaleTimeString('en-GB', { timeZone: 'Asia/Shanghai', hour: '2-digit', minute: '2-digit' });
+
     keys.forEach(k => {
-        const dateH = new Date(db.punches[k][0].time).toLocaleDateString('en-GB', {timeZone: 'Asia/Shanghai'});
-        let html = `<div class="hist-date">${dateH}</div>`;
-        db.punches[k].forEach(p => {
-            const t = new Date(p.time).toLocaleTimeString('en-GB', { timeZone: 'Asia/Shanghai', hour: '2-digit', minute: '2-digit' });
-            const edit = p.type === 'IN' ? `<span class="edit-icon" onclick="adjustTime('${k}')">✎</span>` : '';
-            html += `<div class="hist-row"><span>${p.type}${edit}</span><span>${t}</span></div>`;
-        });
+        const dayPunches = [...db.punches[k]].sort((a,b) => a.time - b.time);
+        if (dayPunches.length === 0) return;
+
+        const dateHeader = new Date(dayPunches[0].time).toLocaleDateString('en-GB', {timeZone: 'Asia/Shanghai'});
+        let html = `<div class="hist-date">${dateHeader}</div>`;
+        
+        let i = 0;
+        while(i < dayPunches.length) {
+            const p1 = dayPunches[i];
+            
+            if (p1.type === 'IN') {
+                const t1 = fmtTime(p1.time);
+                // Check if next is OUT
+                if (i + 1 < dayPunches.length && dayPunches[i+1].type === 'OUT') {
+                    const p2 = dayPunches[i+1];
+                    const t2 = fmtTime(p2.time);
+                    const diff = ((p2.time - p1.time) / 3600000).toFixed(1);
+                    // IN - OUT pair
+                    html += `<div class="hist-row">
+                                <span>${t1}<span class="edit-icon" onclick="adjustTime('${k}')">✎</span> - ${t2}</span>
+                                <span class="hist-dur">(${diff}h)</span>
+                             </div>`;
+                    i += 2;
+                } else {
+                    // IN only (Working)
+                    html += `<div class="hist-row">
+                                <span>${t1}<span class="edit-icon" onclick="adjustTime('${k}')">✎</span> - ...</span>
+                                <span class="hist-dur" style="color:var(--ios-green)">(Working)</span>
+                             </div>`;
+                    i += 1;
+                }
+            } else {
+                // Orphan OUT (Should not happen normally, but render it just in case)
+                const t1 = fmtTime(p1.time);
+                html += `<div class="hist-row"><span>... - ${t1}</span><span>?</span></div>`;
+                i += 1;
+            }
+        }
         list.innerHTML += html;
     });
 }
 
 function getK(d) { return d.toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
-function renderAll() { renderPunches(); calculateStats(); }
 </script>
 </body>
 </html>
