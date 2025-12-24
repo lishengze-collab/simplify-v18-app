@@ -42,8 +42,13 @@
         .btn:disabled { background: #E5E5EA !important; color: #C7C7CC; cursor: default; transform: none; }
         .btn-in { background: #007AFF; box-shadow: 0 4px 10px rgba(0,122,255,0.2); }
         .btn-out { background: var(--color-red); box-shadow: 0 4px 10px rgba(255,59,48,0.2); }
-        .section-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 18px; }
+        
+        /* Calendar Header */
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
         .section-title { font-size: 17px; font-weight: 700; }
+        .nav-btn { background: none; border: none; font-size: 18px; color: #007AFF; cursor: pointer; padding: 5px 10px; }
+        .nav-btn:active { opacity: 0.5; }
+
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 12px; margin-bottom: 24px; justify-items: center; }
         .cal-day-header { font-size: 10px; font-weight: 700; color: #C7C7CC; }
         .cal-day { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; border-radius: 50%; transition: all 0.2s; }
@@ -51,10 +56,18 @@
         .status-yellow { background: var(--color-yellow-bg); color: var(--color-yellow-text); }
         .status-gray { background: var(--color-gray-bg); color: var(--color-gray-text); }
         .today-active { border: 1.5px solid #007AFF; color: #007AFF; }
-        .stats-row { display: flex; justify-content: space-around; border-top: 0.5px solid rgba(0,0,0,0.08); padding-top: 18px; }
+        
+        /* Multi-Stats Row */
+        .stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; border-top: 0.5px solid rgba(0,0,0,0.08); padding-top: 18px; }
+        .stats-detail { display: flex; grid-column: span 2; justify-content: space-between; margin-bottom: 10px; }
+        .detail-item { text-align: center; flex: 1; }
+        .detail-val { font-size: 16px; font-weight: 700; }
+        .detail-lbl { font-size: 8px; font-weight: 600; text-transform: uppercase; margin-top: 2px; }
+        
         .stat-item { text-align: center; }
         .stat-val { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
         .stat-lbl { font-size: 9px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-top: 4px; }
+        
         .footer { text-align: center; font-size: 9px; color: #C7C7CC; margin-top: 16px; letter-spacing: 1px; }
     </style>
 </head>
@@ -87,21 +100,38 @@
         </div>
     </div>
     <div class="card">
-        <div class="section-header"><div class="section-title">History</div><div id="calMonthStr" style="font-size:13px; color:var(--text-secondary)">--</div></div>
+        <div class="section-header">
+            <button class="nav-btn" onclick="changeMonth(-1)">❮</button>
+            <div id="calMonthStr" class="section-title">--</div>
+            <button class="nav-btn" onclick="changeMonth(1)">❯</button>
+        </div>
         <div class="calendar-grid" id="calendarGrid"></div>
+        
         <div class="stats-row">
+            <div class="stats-detail">
+                <div class="detail-item" style="color:var(--color-blue-text)">
+                    <div class="detail-val" id="cntBlue">0</div><div class="detail-lbl">Complete</div>
+                </div>
+                <div class="detail-item" style="color:var(--color-yellow-text)">
+                    <div class="detail-val" id="cntYellow">0</div><div class="detail-lbl">Incomplete</div>
+                </div>
+                <div class="detail-item" style="color:var(--color-gray-text)">
+                    <div class="detail-val" id="cntGray">0</div><div class="detail-lbl">Missed</div>
+                </div>
+            </div>
             <div class="stat-item"><div class="stat-val" id="totalHours">0.0</div><div class="stat-lbl">Total Hours</div></div>
             <div class="stat-item"><div class="stat-val" id="totalDays">0</div><div class="stat-lbl">Days Worked</div></div>
         </div>
     </div>
-    <div class="footer">N-4 VERSION 27.3 • 8.5H LOGIC</div>
+    <div class="footer">N-4 VERSION 27.4 • ADVANCED STATS</div>
 </div>
 
 <script>
 const CFG = { token: "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", repo: "lishengze-collab/simplify-v18-app", path: "workplace-sync.json", start: "2022/05/04" };
 let db = { punches: {} };
 let cloudSha = "";
-const LOCAL_KEY = "TDS_V27_3_STORE";
+const LOCAL_KEY = "TDS_V27_4_STORE";
+let currentViewDate = new Date(); // 用于日历切换
 
 window.onload = async () => { loadLocal(); initClock(); renderUI(); await pull(); };
 
@@ -131,8 +161,13 @@ async function pull() {
 async function push() { 
     try { 
         const content = btoa(unescape(encodeURIComponent(JSON.stringify(db)))); 
-        await fetch(`https://api.github.com/repos/${CFG.repo}/contents/${CFG.path}`, { method: "PUT", headers: { "Authorization": `token ${CFG.token}`, "Content-Type": "application/json" }, body: JSON.stringify({ message: "N-4 V27.3 Sync", content, sha: cloudSha }) }); 
+        await fetch(`https://api.github.com/repos/${CFG.repo}/contents/${CFG.path}`, { method: "PUT", headers: { "Authorization": `token ${CFG.token}`, "Content-Type": "application/json" }, body: JSON.stringify({ message: "N-4 V27.4 Sync", content, sha: cloudSha }) }); 
     } catch(e) {} 
+}
+
+function changeMonth(dir) {
+    currentViewDate.setMonth(currentViewDate.getMonth() + dir);
+    renderUI();
 }
 
 function tick() {
@@ -155,7 +190,6 @@ function tick() {
     
     const firstIn = todayData.find(p => p.type === 'IN');
     if(firstIn) {
-        // Est Off-Duty: IN + 8.5 Hours
         const target = new Date(new Date(firstIn.time).getTime() + 8.5 * 60 * 60 * 1000);
         document.getElementById('estOut').innerText = `${String(target.getHours()).padStart(2,'0')}:${String(target.getMinutes()).padStart(2,'0')}`;
         document.getElementById('estOut').style.color = 'var(--color-green)';
@@ -175,21 +209,22 @@ function doPunch(type) {
 function renderUI() {
     const grid = document.getElementById('calendarGrid');
     const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
+    const year = currentViewDate.getFullYear();
+    const month = currentViewDate.getMonth();
     
-    document.getElementById('calMonthStr').innerText = now.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+    document.getElementById('calMonthStr').innerText = currentViewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
     grid.innerHTML = ['S','M','T','W','T','F','S'].map(d => `<div class="cal-day-header">${d}</div>`).join('');
     
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const firstDayIndex = new Date(year, month, 1).getDay();
     for(let i=0; i<firstDayIndex; i++) grid.innerHTML += `<div></div>`;
     
-    let totalH = 0, daysW = 0;
+    let totalH = 0, daysW = 0, cBlue = 0, cYellow = 0, cGray = 0;
+
     for(let d=1; d<=daysInMonth; d++) {
         const cellDate = new Date(year, month, d);
         const k = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-        const isToday = (d === now.getDate() && month === now.getMonth());
+        const isToday = (d === now.getDate() && month === now.getMonth() && year === now.getFullYear());
         const isPast = (cellDate < new Date().setHours(0,0,0,0));
         const isWeekend = (cellDate.getDay() === 0 || cellDate.getDay() === 6);
 
@@ -199,14 +234,14 @@ function renderUI() {
         
         let cls = "", hrs = 0;
         if (hasIn && hasOut) {
-            cls = "status-blue";
+            cls = "status-blue"; cBlue++;
             hrs = (data.find(p=>p.type==='OUT').time - data.find(p=>p.type==='IN').time) / 3600000;
             daysW++;
         } else if (hasIn && !hasOut) {
             if (isToday) { cls = "today-active"; daysW++; } 
-            else { cls = "status-yellow"; hrs = 8.5; daysW++; } // Abnormal: 8.5H Fixed
+            else { cls = "status-yellow"; cYellow++; hrs = 8.5; daysW++; }
         } else if (!hasIn && isPast && !isWeekend) {
-            cls = "status-gray";
+            cls = "status-gray"; cGray++;
         }
         
         totalH += hrs;
@@ -216,8 +251,12 @@ function renderUI() {
         if(hasIn) el.onclick = () => { if(confirm(`Edit ${k}?`)) adjustTime(k); };
         grid.appendChild(el);
     }
+    
     document.getElementById('totalHours').innerText = totalH.toFixed(1);
     document.getElementById('totalDays').innerText = daysW;
+    document.getElementById('cntBlue').innerText = cBlue;
+    document.getElementById('cntYellow').innerText = cYellow;
+    document.getElementById('cntGray').innerText = cGray;
 }
 
 function getK(d) { return d.toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
