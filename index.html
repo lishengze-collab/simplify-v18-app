@@ -4,78 +4,118 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>N-4</title>
     <style>
         :root {
-            --ios-bg: #F2F2F7;
-            --ios-card: rgba(255, 255, 255, 0.9);
-            --ios-blue: #007AFF;
-            --ios-green: #34C759;
-            --ios-red: #FF3B30;
-            --ios-gray: #8E8E93;
-            --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+            --bg-color: #F2F2F7;
+            --card-bg: #FFFFFF;
+            --text-primary: #000000;
+            --text-secondary: #8E8E93;
+            --color-blue-bg: rgba(0, 122, 255, 0.15);
+            --color-blue-text: #007AFF;
+            --color-yellow-bg: rgba(255, 159, 10, 0.15);
+            --color-yellow-text: #FF9500;
+            --color-gray-bg: rgba(142, 142, 147, 0.2);
+            --color-gray-text: #8E8E93;
+            --color-green: #34C759;
+            --color-red: #FF3B30;
+            --font-stack: "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif;
         }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        body { margin: 0; background: var(--ios-bg); color: #1c1c1e; font-family: var(--font); display: flex; justify-content: center; overflow-x: hidden; }
-        .container { width: 100%; max-width: 390px; padding: 20px 16px 100px; display: flex; flex-direction: column; gap: 14px; }
-        .card { background: var(--ios-card); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 20px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 0.5px solid rgba(255,255,255,0.5); }
-        .day-counter { text-align: center; font-size: 17px; font-weight: 700; padding: 5px 0; }
-        .clock-grid { display: flex; justify-content: space-around; text-align: center; }
-        .clock-label { font-size: 10px; color: var(--ios-gray); font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
-        .clock-time { font-size: 24px; font-weight: 200; font-variant-numeric: tabular-nums; }
-        .est-box { text-align: center; margin-bottom: 16px; padding: 12px; background: rgba(52,199,89,0.08); border-radius: 14px; border: 0.5px dashed var(--ios-green); }
-        .btn-group { display: flex; gap: 10px; }
-        .btn { flex: 1; padding: 14px; border: none; border-radius: 14px; font-weight: 600; font-size: 15px; color: #fff; cursor: pointer; }
-        .btn:disabled { background: #d1d1d6 !important; }
-        .section-title { font-size: 10px; color: var(--ios-gray); font-weight: 700; margin-bottom: 10px; text-transform: uppercase; }
-        
-        /* 优化后的历史记录样式 */
-        .hist-date { font-size: 12px; font-weight: 700; color: var(--ios-blue); margin-top: 10px; border-bottom: 0.5px solid #eee; padding-bottom: 4px; }
-        .hist-row { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; align-items: center; }
-        .hist-dur { font-weight: 600; color: var(--ios-gray); }
-        .edit-icon { font-size: 12px; color: var(--ios-blue); margin-left: 4px; cursor: pointer; opacity: 0.8; vertical-align: middle; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; user-select: none; }
+        body { margin: 0; background: var(--bg-color); color: var(--text-primary); font-family: var(--font-stack); display: flex; justify-content: center; min-height: 100vh; padding-bottom: 40px; }
+        .container { width: 100%; max-width: 390px; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+        .card { background: var(--card-bg); border-radius: 20px; padding: 22px; box-shadow: 0 4px 16px rgba(0,0,0,0.03); }
+        .day-counter { text-align: center; font-size: 13px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; opacity: 0.8; }
+        .clock-row { display: flex; justify-content: space-between; align-items: center; }
+        .clock-item { text-align: center; flex: 1; }
+        .clock-label { font-size: 10px; color: var(--text-secondary); font-weight: 700; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .clock-time { font-size: 24px; font-weight: 300; font-variant-numeric: tabular-nums; letter-spacing: -0.5px; }
+        .clock-date { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+        .divider { width: 1px; height: 36px; background: rgba(0,0,0,0.08); }
+        .est-display { text-align: center; margin-bottom: 20px; padding: 14px; background: rgba(52,199,89,0.06); border-radius: 16px; }
+        .est-label { font-size: 10px; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; margin-bottom: 4px;}
+        .est-value { font-size: 28px; font-weight: 700; color: var(--color-green); font-variant-numeric: tabular-nums; }
+        .btn-group { display: flex; gap: 12px; }
+        .btn { flex: 1; padding: 16px; border: none; border-radius: 16px; font-weight: 600; font-size: 16px; color: #fff; cursor: pointer; transition: all 0.2s; }
+        .btn:active { transform: scale(0.97); opacity: 0.9; }
+        .btn:disabled { background: #E5E5EA !important; color: #C7C7CC; cursor: default; transform: none; }
+        .btn-in { background: #007AFF; box-shadow: 0 4px 10px rgba(0,122,255,0.2); }
+        .btn-out { background: var(--color-red); box-shadow: 0 4px 10px rgba(255,59,48,0.2); }
+        .section-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 18px; }
+        .section-title { font-size: 17px; font-weight: 700; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 12px; margin-bottom: 24px; justify-items: center; }
+        .cal-day-header { font-size: 10px; font-weight: 700; color: #C7C7CC; }
+        .cal-day { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; border-radius: 50%; transition: all 0.2s; }
+        .status-blue { background: var(--color-blue-bg); color: var(--color-blue-text); }
+        .status-yellow { background: var(--color-yellow-bg); color: var(--color-yellow-text); }
+        .status-gray { background: var(--color-gray-bg); color: var(--color-gray-text); }
+        .today-active { border: 1.5px solid #007AFF; color: #007AFF; }
+        .stats-row { display: flex; justify-content: space-around; border-top: 0.5px solid rgba(0,0,0,0.08); padding-top: 18px; }
+        .stat-item { text-align: center; }
+        .stat-val { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+        .stat-lbl { font-size: 9px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-top: 4px; }
+        .footer { text-align: center; font-size: 9px; color: #C7C7CC; margin-top: 16px; letter-spacing: 1px; }
     </style>
 </head>
 <body>
-<div class="container" id="mainApp">
-    <div class="card"><div class="day-counter" id="dayDisplay">Day -- at TDS</div></div>
-    
+<div class="container">
+    <div class="card"><div class="day-counter" id="dayDisplay">DAY -- AT TDS</div></div>
     <div class="card">
-        <div class="clock-grid">
-            <div><div class="clock-label">Beijing</div><div class="clock-time" id="shTime">00:00:00</div></div>
-            <div><div class="clock-label">New York</div><div class="clock-time" id="nyTime">00:00:00</div></div>
+        <div class="clock-row">
+            <div class="clock-item">
+                <div class="clock-label">CST (BJ)</div>
+                <div class="clock-time" id="shTime">00:00:00</div>
+                <div class="clock-date" id="shDate">--/--</div>
+            </div>
+            <div class="divider"></div>
+            <div class="clock-item">
+                <div class="clock-label">EST (NY)</div>
+                <div class="clock-time" id="nyTime">00:00:00</div>
+                <div class="clock-date" id="nyDate">--/--</div>
+            </div>
         </div>
     </div>
-    
     <div class="card">
-        <div class="est-box">
-            <div style="font-size:10px; color:var(--ios-gray); font-weight:700;">BJ EST. OFF-DUTY (8.5H)</div>
-            <div id="estOut" style="font-size:22px; font-weight:800; color:var(--ios-green);">--:--</div>
+        <div class="est-display">
+            <div class="est-label">Est. Off-Duty (8.5H Fixed)</div>
+            <div id="estOut" class="est-value">--:--</div>
         </div>
         <div class="btn-group">
-            <button id="inBtn" class="btn" style="background:var(--ios-blue)" onclick="doPunch('IN')">Clock IN</button>
-            <button id="outBtn" class="btn" style="background:var(--ios-red)" onclick="doPunch('OUT')">Clock OUT</button>
+            <button id="inBtn" class="btn btn-in" onclick="doPunch('IN')">Clock IN</button>
+            <button id="outBtn" class="btn btn-out" onclick="doPunch('OUT')">Clock OUT</button>
         </div>
     </div>
-    
     <div class="card">
-        <div class="section-title">Punch History</div>
-        <div id="punchHistory"></div>
+        <div class="section-header"><div class="section-title">History</div><div id="calMonthStr" style="font-size:13px; color:var(--text-secondary)">--</div></div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+        <div class="stats-row">
+            <div class="stat-item"><div class="stat-val" id="totalHours">0.0</div><div class="stat-lbl">Total Hours</div></div>
+            <div class="stat-item"><div class="stat-val" id="totalDays">0</div><div class="stat-lbl">Days Worked</div></div>
+        </div>
     </div>
-    
-    <div style="text-align:center; color:var(--ios-gray); font-size:9px; margin-top:20px; letter-spacing:1px;">N-4 • IMMUTABLE LEDGER</div>
+    <div class="footer">N-4 VERSION 27.3 • 8.5H LOGIC</div>
 </div>
 
 <script>
 const CFG = { token: "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", repo: "lishengze-collab/simplify-v18-app", path: "workplace-sync.json", start: "2022/05/04" };
 let db = { punches: {} };
 let cloudSha = "";
-const LOCAL_KEY = "TDS_V25_SECURE_STORAGE";
+const LOCAL_KEY = "TDS_V27_3_STORE";
 
-window.onload = async () => { await pull(); init(); };
-function init() { loadLocal(); setInterval(tick, 1000); renderPunches(); }
-function loadLocal() { const data = localStorage.getItem(LOCAL_KEY); if(data) { const parsed = JSON.parse(data); db.punches = parsed.punches || {}; } }
-function save() { localStorage.setItem(LOCAL_KEY, JSON.stringify(db)); setTimeout(push, 2000); }
+window.onload = async () => { loadLocal(); initClock(); renderUI(); await pull(); };
+
+function initClock() { tick(); setInterval(tick, 1000); }
+
+function loadLocal() { 
+    const data = localStorage.getItem(LOCAL_KEY); 
+    if(data) db.punches = JSON.parse(data).punches || {}; 
+}
+
+function save() { 
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(db)); 
+    renderUI(); setTimeout(push, 500); 
+}
 
 async function pull() { 
     try { 
@@ -83,8 +123,7 @@ async function pull() {
         if(r.ok) { 
             const j = await r.json(); cloudSha = j.sha; 
             const remote = JSON.parse(decodeURIComponent(escape(atob(j.content)))); 
-            db.punches = remote.punches || {};
-            renderPunches();
+            db.punches = remote.punches || {}; renderUI();
         } 
     } catch(e) {} 
 }
@@ -92,102 +131,106 @@ async function pull() {
 async function push() { 
     try { 
         const content = btoa(unescape(encodeURIComponent(JSON.stringify(db)))); 
-        await fetch(`https://api.github.com/repos/${CFG.repo}/contents/${CFG.path}`, { method: "PUT", headers: { "Authorization": `token ${CFG.token}`, "Content-Type": "application/json" }, body: JSON.stringify({ message: "N-4 Sync", content, sha: cloudSha }) }); 
+        await fetch(`https://api.github.com/repos/${CFG.repo}/contents/${CFG.path}`, { method: "PUT", headers: { "Authorization": `token ${CFG.token}`, "Content-Type": "application/json" }, body: JSON.stringify({ message: "N-4 V27.3 Sync", content, sha: cloudSha }) }); 
     } catch(e) {} 
 }
 
 function tick() {
     const now = new Date();
-    document.getElementById('shTime').innerText = now.toLocaleTimeString('en-GB', { timeZone: 'Asia/Shanghai' });
-    document.getElementById('nyTime').innerText = now.toLocaleTimeString('en-GB', { timeZone: 'America/New_York' });
+    const fmt = (z) => ({ timeZone: z, hour12: false, hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    const fmtD = (z) => ({ timeZone: z, year:'numeric', month:'2-digit', day:'2-digit' });
+    
+    document.getElementById('shTime').innerText = now.toLocaleTimeString('en-GB', fmt('Asia/Shanghai'));
+    document.getElementById('shDate').innerText = now.toLocaleDateString('en-GB', fmtD('Asia/Shanghai')).split('/').reverse().join('-');
+    document.getElementById('nyTime').innerText = now.toLocaleTimeString('en-GB', fmt('America/New_York'));
+    document.getElementById('nyDate').innerText = now.toLocaleDateString('en-GB', fmtD('America/New_York')).split('/').reverse().join('-');
+
     const diffDays = Math.floor((now - new Date(CFG.start)) / (1000 * 60 * 60 * 24)) + 1;
-    document.getElementById('dayDisplay').innerText = `Day ${diffDays} at TDS`;
+    document.getElementById('dayDisplay').innerText = `DAY ${diffDays} AT TDS`;
     
     const k = getK(now);
     const todayData = db.punches[k] || [];
-    const firstIn = todayData.find(p => p.type === 'IN');
-    if(firstIn) {
-        const inBJ = new Date(new Date(firstIn.time).toLocaleString('en-US', {timeZone: 'Asia/Shanghai'}));
-        let h = inBJ.getHours(), m = inBJ.getMinutes() + 30;
-        if (m >= 60) { h += 1; m -= 60; }
-        h = (h + 8) % 24;
-        document.getElementById('estOut').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-    }
     document.getElementById('inBtn').disabled = todayData.some(p => p.type === 'IN');
     document.getElementById('outBtn').disabled = !todayData.some(p => p.type === 'IN') || todayData.some(p => p.type === 'OUT');
+    
+    const firstIn = todayData.find(p => p.type === 'IN');
+    if(firstIn) {
+        // Est Off-Duty: IN + 8.5 Hours
+        const target = new Date(new Date(firstIn.time).getTime() + 8.5 * 60 * 60 * 1000);
+        document.getElementById('estOut').innerText = `${String(target.getHours()).padStart(2,'0')}:${String(target.getMinutes()).padStart(2,'0')}`;
+        document.getElementById('estOut').style.color = 'var(--color-green)';
+    } else {
+        document.getElementById('estOut').innerText = "--:--";
+        document.getElementById('estOut').style.color = 'var(--text-secondary)';
+    }
 }
 
 function doPunch(type) { 
     const k = getK(new Date()); 
     if(!db.punches[k]) db.punches[k] = []; 
     db.punches[k].push({ type, time: Date.now() }); 
-    save(); renderPunches(); 
+    save(); 
 }
 
-function adjustTime(dateKey) {
-    const todayP = db.punches[dateKey];
-    const inIdx = todayP.findIndex(p => p.type === 'IN');
-    if (inIdx === -1) return;
-    const newT = prompt("Adjust IN time (HH:mm):", "09:30");
-    if (!newT || !newT.includes(':')) return;
-    const [h, m] = newT.split(':').map(Number);
-    const original = new Date(todayP[inIdx].time);
-    const utcTime = Date.UTC(original.getUTCFullYear(), original.getUTCMonth(), original.getUTCDate(), h - 8, m, 0, 0);
-    todayP[inIdx].time = utcTime;
-    save(); renderPunches();
-}
-
-function renderPunches() {
-    const list = document.getElementById('punchHistory');
-    const keys = Object.keys(db.punches).sort().reverse().slice(0, 15); // Show last 15 days
-    list.innerHTML = "";
+function renderUI() {
+    const grid = document.getElementById('calendarGrid');
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
     
-    const fmtTime = (ts) => new Date(ts).toLocaleTimeString('en-GB', { timeZone: 'Asia/Shanghai', hour: '2-digit', minute: '2-digit' });
+    document.getElementById('calMonthStr').innerText = now.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+    grid.innerHTML = ['S','M','T','W','T','F','S'].map(d => `<div class="cal-day-header">${d}</div>`).join('');
+    
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    for(let i=0; i<firstDayIndex; i++) grid.innerHTML += `<div></div>`;
+    
+    let totalH = 0, daysW = 0;
+    for(let d=1; d<=daysInMonth; d++) {
+        const cellDate = new Date(year, month, d);
+        const k = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const isToday = (d === now.getDate() && month === now.getMonth());
+        const isPast = (cellDate < new Date().setHours(0,0,0,0));
+        const isWeekend = (cellDate.getDay() === 0 || cellDate.getDay() === 6);
 
-    keys.forEach(k => {
-        const dayPunches = [...db.punches[k]].sort((a,b) => a.time - b.time);
-        if (dayPunches.length === 0) return;
-
-        const dateHeader = new Date(dayPunches[0].time).toLocaleDateString('en-GB', {timeZone: 'Asia/Shanghai'});
-        let html = `<div class="hist-date">${dateHeader}</div>`;
+        const data = db.punches[k] || [];
+        const hasIn = data.some(p => p.type === 'IN');
+        const hasOut = data.some(p => p.type === 'OUT');
         
-        let i = 0;
-        while(i < dayPunches.length) {
-            const p1 = dayPunches[i];
-            
-            if (p1.type === 'IN') {
-                const t1 = fmtTime(p1.time);
-                // Check if next is OUT
-                if (i + 1 < dayPunches.length && dayPunches[i+1].type === 'OUT') {
-                    const p2 = dayPunches[i+1];
-                    const t2 = fmtTime(p2.time);
-                    const diff = ((p2.time - p1.time) / 3600000).toFixed(1);
-                    // IN - OUT pair
-                    html += `<div class="hist-row">
-                                <span>${t1}<span class="edit-icon" onclick="adjustTime('${k}')">✎</span> - ${t2}</span>
-                                <span class="hist-dur">(${diff}h)</span>
-                             </div>`;
-                    i += 2;
-                } else {
-                    // IN only (Working)
-                    html += `<div class="hist-row">
-                                <span>${t1}<span class="edit-icon" onclick="adjustTime('${k}')">✎</span> - ...</span>
-                                <span class="hist-dur" style="color:var(--ios-green)">(Working)</span>
-                             </div>`;
-                    i += 1;
-                }
-            } else {
-                // Orphan OUT (Should not happen normally, but render it just in case)
-                const t1 = fmtTime(p1.time);
-                html += `<div class="hist-row"><span>... - ${t1}</span><span>?</span></div>`;
-                i += 1;
-            }
+        let cls = "", hrs = 0;
+        if (hasIn && hasOut) {
+            cls = "status-blue";
+            hrs = (data.find(p=>p.type==='OUT').time - data.find(p=>p.type==='IN').time) / 3600000;
+            daysW++;
+        } else if (hasIn && !hasOut) {
+            if (isToday) { cls = "today-active"; daysW++; } 
+            else { cls = "status-yellow"; hrs = 8.5; daysW++; } // Abnormal: 8.5H Fixed
+        } else if (!hasIn && isPast && !isWeekend) {
+            cls = "status-gray";
         }
-        list.innerHTML += html;
-    });
+        
+        totalH += hrs;
+        const el = document.createElement('div');
+        el.className = `cal-day ${cls}`;
+        el.innerText = d;
+        if(hasIn) el.onclick = () => { if(confirm(`Edit ${k}?`)) adjustTime(k); };
+        grid.appendChild(el);
+    }
+    document.getElementById('totalHours').innerText = totalH.toFixed(1);
+    document.getElementById('totalDays').innerText = daysW;
 }
 
 function getK(d) { return d.toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
+
+function adjustTime(k) {
+    const p = db.punches[k]; const idx = p.findIndex(x => x.type === 'IN');
+    const val = prompt("New IN time (HH:mm):", "09:30");
+    if(val && val.includes(":")) {
+        const [h,m] = val.split(":").map(Number);
+        const t = new Date(p[idx].time); t.setHours(h,m,0,0);
+        p[idx].time = t.getTime(); save();
+    }
+}
 </script>
 </body>
 </html>
