@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>N-4</title>
+    <title>N-4.1</title>
     <style>
         :root {
             --bg-color: #F2F2F7;
@@ -33,9 +33,12 @@
         .clock-time { font-size: 24px; font-weight: 300; font-variant-numeric: tabular-nums; letter-spacing: -0.5px; }
         .clock-date { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
         .divider { width: 1px; height: 36px; background: rgba(0,0,0,0.08); }
-        .est-display { text-align: center; margin-bottom: 20px; padding: 14px; background: rgba(52,199,89,0.06); border-radius: 16px; }
+        
+        .est-display { text-align: center; margin-bottom: 20px; padding: 14px; background: rgba(52,199,89,0.06); border-radius: 16px; position: relative; }
         .est-label { font-size: 10px; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; margin-bottom: 4px;}
         .est-value { font-size: 28px; font-weight: 700; color: var(--color-green); font-variant-numeric: tabular-nums; }
+        .countdown-text { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-top: 8px; }
+        
         .btn-group { display: flex; gap: 12px; }
         .btn { flex: 1; padding: 16px; border: none; border-radius: 16px; font-weight: 600; font-size: 16px; color: #fff; cursor: pointer; transition: all 0.2s; }
         .btn:active { transform: scale(0.97); opacity: 0.9; }
@@ -45,7 +48,8 @@
         
         /* Calendar Header */
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-        .section-title { font-size: 17px; font-weight: 700; }
+        .section-title { font-size: 14px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); }
+        .cal-title { font-size: 17px; font-weight: 700; color: var(--text-primary); text-transform: none; }
         .nav-btn { background: none; border: none; font-size: 18px; color: #007AFF; cursor: pointer; padding: 5px 10px; }
         .nav-btn:active { opacity: 0.5; }
 
@@ -68,12 +72,23 @@
         .stat-val { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
         .stat-lbl { font-size: 9px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-top: 4px; }
         
+        /* Punch History Section */
+        .history-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; max-height: 200px; overflow-y: auto; }
+        .hist-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 0.5px solid #E5E5EA; font-size: 13px; }
+        .hist-row:last-child { border-bottom: none; }
+        .hist-date { font-weight: 600; color: var(--text-primary); }
+        .hist-times { display: flex; gap: 12px; font-variant-numeric: tabular-nums; font-weight: 500; }
+        .t-in { color: var(--color-blue-text); }
+        .t-out { color: var(--color-red); }
+        .t-miss { color: var(--text-secondary); font-style: italic; }
+        
         .footer { text-align: center; font-size: 9px; color: #C7C7CC; margin-top: 16px; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="card"><div class="day-counter" id="dayDisplay">DAY -- AT TDS</div></div>
+    
     <div class="card">
         <div class="clock-row">
             <div class="clock-item">
@@ -89,20 +104,23 @@
             </div>
         </div>
     </div>
+    
     <div class="card">
         <div class="est-display">
             <div class="est-label">Est. Off-Duty (8.5H Fixed)</div>
             <div id="estOut" class="est-value">--:--</div>
+            <div id="countdownText" class="countdown-text" style="display:none;"></div>
         </div>
         <div class="btn-group">
             <button id="inBtn" class="btn btn-in" onclick="doPunch('IN')">Clock IN</button>
             <button id="outBtn" class="btn btn-out" onclick="doPunch('OUT')">Clock OUT</button>
         </div>
     </div>
+    
     <div class="card">
         <div class="section-header">
             <button class="nav-btn" onclick="changeMonth(-1)">❮</button>
-            <div id="calMonthStr" class="section-title">--</div>
+            <div id="calMonthStr" class="cal-title">--</div>
             <button class="nav-btn" onclick="changeMonth(1)">❯</button>
         </div>
         <div class="calendar-grid" id="calendarGrid"></div>
@@ -123,15 +141,22 @@
             <div class="stat-item"><div class="stat-val" id="totalDays">0</div><div class="stat-lbl">Days Worked</div></div>
         </div>
     </div>
-    <div class="footer">N-4 VERSION 27.4 • ADVANCED STATS</div>
+
+    <div class="card">
+        <div class="section-title">Actual Punch Times</div>
+        <div id="punchHistoryArea" class="history-list">
+            </div>
+    </div>
+
+    <div class="footer">N-4.1 VERSION 27.5 • SYNC SECURED</div>
 </div>
 
 <script>
 const CFG = { token: "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", repo: "lishengze-collab/simplify-v18-app", path: "workplace-sync.json", start: "2022/05/04" };
 let db = { punches: {} };
 let cloudSha = "";
-const LOCAL_KEY = "TDS_V27_4_STORE";
-let currentViewDate = new Date(); // 用于日历切换
+const LOCAL_KEY = "TDS_V27_4_STORE"; // 保持相同的存储 Key，确保数据不丢失
+let currentViewDate = new Date(); 
 
 window.onload = async () => { loadLocal(); initClock(); renderUI(); await pull(); };
 
@@ -161,7 +186,7 @@ async function pull() {
 async function push() { 
     try { 
         const content = btoa(unescape(encodeURIComponent(JSON.stringify(db)))); 
-        await fetch(`https://api.github.com/repos/${CFG.repo}/contents/${CFG.path}`, { method: "PUT", headers: { "Authorization": `token ${CFG.token}`, "Content-Type": "application/json" }, body: JSON.stringify({ message: "N-4 V27.4 Sync", content, sha: cloudSha }) }); 
+        await fetch(`https://api.github.com/repos/${CFG.repo}/contents/${CFG.path}`, { method: "PUT", headers: { "Authorization": `token ${CFG.token}`, "Content-Type": "application/json" }, body: JSON.stringify({ message: "N-4.1 V27.5 Sync", content, sha: cloudSha }) }); 
     } catch(e) {} 
 }
 
@@ -189,13 +214,34 @@ function tick() {
     document.getElementById('outBtn').disabled = !todayData.some(p => p.type === 'IN') || todayData.some(p => p.type === 'OUT');
     
     const firstIn = todayData.find(p => p.type === 'IN');
+    const estOutEl = document.getElementById('estOut');
+    const cdEl = document.getElementById('countdownText');
+
     if(firstIn) {
-        const target = new Date(new Date(firstIn.time).getTime() + 8.5 * 60 * 60 * 1000);
-        document.getElementById('estOut').innerText = `${String(target.getHours()).padStart(2,'0')}:${String(target.getMinutes()).padStart(2,'0')}`;
-        document.getElementById('estOut').style.color = 'var(--color-green)';
+        // 计算目标下班时间
+        const targetTime = new Date(firstIn.time).getTime() + 8.5 * 60 * 60 * 1000;
+        const targetDate = new Date(targetTime);
+        
+        // 由于跨时区UI展示，此处用该时间的本地形式呈现(保证格式统一)
+        estOutEl.innerText = `${String(targetDate.getHours()).padStart(2,'0')}:${String(targetDate.getMinutes()).padStart(2,'0')}`;
+        estOutEl.style.color = 'var(--color-green)';
+
+        // 计算剩余时间
+        const remMs = targetTime - now.getTime();
+        cdEl.style.display = 'block';
+        if(remMs > 0) {
+            const h = Math.floor(remMs / 3600000);
+            const m = Math.floor((remMs % 3600000) / 60000);
+            cdEl.innerText = `Remaining: ${h}h ${m}m`;
+            cdEl.style.color = 'var(--text-secondary)';
+        } else {
+            cdEl.innerText = `Shift Completed. Ready to Clock OUT!`;
+            cdEl.style.color = 'var(--color-yellow-text)';
+        }
     } else {
-        document.getElementById('estOut').innerText = "--:--";
-        document.getElementById('estOut').style.color = 'var(--text-secondary)';
+        estOutEl.innerText = "--:--";
+        estOutEl.style.color = 'var(--text-secondary)';
+        cdEl.style.display = 'none';
     }
 }
 
@@ -206,7 +252,13 @@ function doPunch(type) {
     save(); 
 }
 
+// 统一渲染日历和打卡记录
 function renderUI() {
+    renderCalendar();
+    renderHistory();
+}
+
+function renderCalendar() {
     const grid = document.getElementById('calendarGrid');
     const now = new Date();
     const year = currentViewDate.getFullYear();
@@ -257,6 +309,46 @@ function renderUI() {
     document.getElementById('cntBlue').innerText = cBlue;
     document.getElementById('cntYellow').innerText = cYellow;
     document.getElementById('cntGray').innerText = cGray;
+}
+
+// 渲染真实打卡时间记录
+function renderHistory() {
+    const list = document.getElementById('punchHistoryArea');
+    list.innerHTML = "";
+    
+    // 获取最近的记录（倒序）
+    const keys = Object.keys(db.punches).sort().reverse();
+    if(keys.length === 0) {
+        list.innerHTML = "<div style='text-align:center; color:var(--text-secondary); font-size:12px; padding:10px 0;'>No records yet.</div>";
+        return;
+    }
+
+    // 显示最近的15条记录
+    keys.slice(0, 15).forEach(k => {
+        const data = db.punches[k];
+        const pIn = data.find(x => x.type === 'IN');
+        const pOut = data.find(x => x.type === 'OUT');
+        
+        // 格式化时间为北京时间 (HH:mm)
+        const formatTime = (p) => {
+            if(!p) return `<span class="t-miss">--:--</span>`;
+            return new Date(p.time).toLocaleTimeString('en-GB', { timeZone: 'Asia/Shanghai', hour: '2-digit', minute: '2-digit' });
+        };
+
+        const inStr = formatTime(pIn);
+        const outStr = formatTime(pOut);
+
+        const row = document.createElement('div');
+        row.className = 'hist-row';
+        row.innerHTML = `
+            <div class="hist-date">${k}</div>
+            <div class="hist-times">
+                <span class="t-in">IN: ${inStr}</span>
+                <span class="t-out">OUT: ${outStr}</span>
+            </div>
+        `;
+        list.appendChild(row);
+    });
 }
 
 function getK(d) { return d.toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
