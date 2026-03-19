@@ -5,28 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>N-4.1</title>
+    <title>N-4.2</title>
     <style>
         :root {
             --bg-color: #F2F2F7;
             --card-bg: #FFFFFF;
             --text-primary: #000000;
             --text-secondary: #8E8E93;
-            --color-blue-bg: rgba(0, 122, 255, 0.15);
-            --color-blue-text: #007AFF;
-            --color-yellow-bg: rgba(255, 159, 10, 0.15);
-            --color-yellow-text: #FF9500;
-            --color-gray-bg: rgba(142, 142, 147, 0.2);
-            --color-gray-text: #8E8E93;
+            --text-dark: #1C1C1E;
+            --color-blue: #007AFF;
+            --color-yellow: #FF9500;
+            --color-gray: #8E8E93;
             --color-green: #34C759;
-            --color-red: #FF3B30;
             --font-stack: "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; user-select: none; }
         body { margin: 0; background: var(--bg-color); color: var(--text-primary); font-family: var(--font-stack); display: flex; justify-content: center; min-height: 100vh; padding-bottom: 40px; }
         .container { width: 100%; max-width: 390px; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
-        .card { background: var(--card-bg); border-radius: 20px; padding: 22px; box-shadow: 0 4px 16px rgba(0,0,0,0.03); }
+        .card { background: var(--card-bg); border-radius: 20px; padding: 22px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); }
         .day-counter { text-align: center; font-size: 13px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; opacity: 0.8; }
+        
+        /* Clocks */
         .clock-row { display: flex; justify-content: space-between; align-items: center; }
         .clock-item { text-align: center; flex: 1; }
         .clock-label { font-size: 10px; color: var(--text-secondary); font-weight: 700; letter-spacing: 0.5px; margin-bottom: 6px; }
@@ -34,55 +33,54 @@
         .clock-date { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
         .divider { width: 1px; height: 36px; background: rgba(0,0,0,0.08); }
         
-        .est-display { text-align: center; margin-bottom: 20px; padding: 14px; background: rgba(52,199,89,0.06); border-radius: 16px; position: relative; }
+        /* Punch Area */
+        .est-display { text-align: center; margin-bottom: 20px; padding: 14px; background: rgba(52,199,89,0.08); border-radius: 16px; position: relative; }
         .est-label { font-size: 10px; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; margin-bottom: 4px;}
         .est-value { font-size: 28px; font-weight: 700; color: var(--color-green); font-variant-numeric: tabular-nums; }
-        .countdown-text { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-top: 8px; }
+        .countdown-text { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-top: 8px; }
         
-        .btn-group { display: flex; gap: 12px; }
-        .btn { flex: 1; padding: 16px; border: none; border-radius: 16px; font-weight: 600; font-size: 16px; color: #fff; cursor: pointer; transition: all 0.2s; }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 16px; font-weight: 600; font-size: 16px; color: #fff; cursor: pointer; transition: all 0.2s; background: var(--color-blue); box-shadow: 0 4px 10px rgba(0,122,255,0.2); }
         .btn:active { transform: scale(0.97); opacity: 0.9; }
-        .btn:disabled { background: #E5E5EA !important; color: #C7C7CC; cursor: default; transform: none; }
-        .btn-in { background: #007AFF; box-shadow: 0 4px 10px rgba(0,122,255,0.2); }
-        .btn-out { background: var(--color-red); box-shadow: 0 4px 10px rgba(255,59,48,0.2); }
+        .btn:disabled { background: #E5E5EA !important; color: #8E8E93; box-shadow: none; cursor: default; transform: none; }
         
-        /* Calendar Header */
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-        .section-title { font-size: 14px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); }
-        .cal-title { font-size: 17px; font-weight: 700; color: var(--text-primary); text-transform: none; }
-        .nav-btn { background: none; border: none; font-size: 18px; color: #007AFF; cursor: pointer; padding: 5px 10px; }
-        .nav-btn:active { opacity: 0.5; }
-
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 12px; margin-bottom: 24px; justify-items: center; }
-        .cal-day-header { font-size: 10px; font-weight: 700; color: #C7C7CC; }
-        .cal-day { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; border-radius: 50%; transition: all 0.2s; }
-        .status-blue { background: var(--color-blue-bg); color: var(--color-blue-text); }
-        .status-yellow { background: var(--color-yellow-bg); color: var(--color-yellow-text); }
-        .status-gray { background: var(--color-gray-bg); color: var(--color-gray-text); }
-        .today-active { border: 1.5px solid #007AFF; color: #007AFF; }
+        /* Calendar UI */
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .cal-title { font-size: 17px; font-weight: 700; color: var(--text-primary); }
+        .nav-btn { background: none; border: none; font-size: 18px; color: var(--color-blue); cursor: pointer; padding: 5px 15px; }
         
-        /* Multi-Stats Row */
-        .stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; border-top: 0.5px solid rgba(0,0,0,0.08); padding-top: 18px; }
-        .stats-detail { display: flex; grid-column: span 2; justify-content: space-between; margin-bottom: 10px; }
-        .detail-item { text-align: center; flex: 1; }
-        .detail-val { font-size: 16px; font-weight: 700; }
-        .detail-lbl { font-size: 8px; font-weight: 600; text-transform: uppercase; margin-top: 2px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 8px; column-gap: 4px; margin-bottom: 20px; justify-items: center; }
+        .cal-day-header { font-size: 10px; font-weight: 700; color: #C7C7CC; margin-bottom: 8px; }
         
+        /* New Cell Design */
+        .cal-cell { position: relative; width: 100%; height: 56px; display: flex; flex-direction: column; align-items: center; padding-top: 2px; border-radius: 12px; background: transparent; transition: background 0.2s; }
+        .date-num { width: 24px; height: 24px; line-height: 24px; text-align: center; border-radius: 50%; font-size: 15px; font-weight: 500; z-index: 2; transition: all 0.2s; }
+        .punch-time { font-size: 9px; font-weight: 700; color: var(--text-dark); margin-top: 2px; font-variant-numeric: tabular-nums; letter-spacing: -0.2px; }
+        
+        /* Cell States */
+        .status-blue .date-num { background: var(--color-blue); color: #fff; font-weight: 600; box-shadow: 0 2px 6px rgba(0,122,255,0.3); }
+        .status-gray .date-num { color: #C7C7CC; }
+        .today-active .date-num { color: var(--color-blue); font-weight: 700; }
+        
+        /* Schedule Dot */
+        .sch-dot { position: absolute; top: 4px; right: 6px; width: 6px; height: 6px; background: var(--color-yellow); border-radius: 50%; box-shadow: 0 1px 3px rgba(255,149,0,0.4); }
+        
+        /* Flags */
+        .flags-box { display: flex; gap: 2px; margin-top: auto; padding-bottom: 2px; }
+        .flag-icon { font-size: 11px; line-height: 1; border-radius: 50%; width: 12px; height: 12px; overflow: hidden; display: inline-flex; justify-content: center; align-items: center; background: #f0f0f0; }
+        
+        /* Stats row (2x2 Grid) */
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; border-top: 0.5px solid rgba(0,0,0,0.08); padding-top: 20px; }
         .stat-item { text-align: center; }
-        .stat-val { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+        .stat-val { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
         .stat-lbl { font-size: 9px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-top: 4px; }
         
-        /* Punch History Section */
-        .history-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; max-height: 200px; overflow-y: auto; }
-        .hist-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 0.5px solid #E5E5EA; font-size: 13px; }
-        .hist-row:last-child { border-bottom: none; }
-        .hist-date { font-weight: 600; color: var(--text-primary); }
-        .hist-times { display: flex; gap: 12px; font-variant-numeric: tabular-nums; font-weight: 500; }
-        .t-in { color: var(--color-blue-text); }
-        .t-out { color: var(--color-red); }
-        .t-miss { color: var(--text-secondary); font-style: italic; }
+        /* Schedule Form */
+        .schedule-title { font-size: 14px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 14px; }
+        .ios-input { width: 100%; padding: 12px 14px; border: none; border-radius: 12px; font-size: 15px; background: var(--bg-color); margin-bottom: 12px; font-family: var(--font-stack); }
+        .date-row { display: flex; gap: 10px; }
+        .btn-sch { width: auto; padding: 10px 24px; font-size: 14px; border-radius: 12px; background: var(--color-yellow); box-shadow: 0 4px 10px rgba(255,149,0,0.2); float: right; margin-top: 4px; }
         
-        .footer { text-align: center; font-size: 9px; color: #C7C7CC; margin-top: 16px; letter-spacing: 1px; }
+        .footer { text-align: center; font-size: 9px; color: #C7C7CC; margin-top: 10px; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -111,10 +109,7 @@
             <div id="estOut" class="est-value">--:--</div>
             <div id="countdownText" class="countdown-text" style="display:none;"></div>
         </div>
-        <div class="btn-group">
-            <button id="inBtn" class="btn btn-in" onclick="doPunch('IN')">Clock IN</button>
-            <button id="outBtn" class="btn btn-out" onclick="doPunch('OUT')">Clock OUT</button>
-        </div>
+        <button id="inBtn" class="btn" onclick="doPunch()">Clock In & Complete</button>
     </div>
     
     <div class="card">
@@ -125,46 +120,84 @@
         </div>
         <div class="calendar-grid" id="calendarGrid"></div>
         
-        <div class="stats-row">
-            <div class="stats-detail">
-                <div class="detail-item" style="color:var(--color-blue-text)">
-                    <div class="detail-val" id="cntBlue">0</div><div class="detail-lbl">Complete</div>
-                </div>
-                <div class="detail-item" style="color:var(--color-yellow-text)">
-                    <div class="detail-val" id="cntYellow">0</div><div class="detail-lbl">Incomplete</div>
-                </div>
-                <div class="detail-item" style="color:var(--color-gray-text)">
-                    <div class="detail-val" id="cntGray">0</div><div class="detail-lbl">Missed</div>
-                </div>
+        <div class="stats-grid">
+            <div class="stat-item" style="color:var(--color-blue)">
+                <div class="stat-val" id="cntBlue">0</div><div class="stat-lbl">Days Worked</div>
             </div>
-            <div class="stat-item"><div class="stat-val" id="totalHours">0.0</div><div class="stat-lbl">Total Hours</div></div>
-            <div class="stat-item"><div class="stat-val" id="totalDays">0</div><div class="stat-lbl">Days Worked</div></div>
+            <div class="stat-item" style="color:var(--color-gray)">
+                <div class="stat-val" id="cntGray">0</div><div class="stat-lbl">Missed</div>
+            </div>
+            <div class="stat-item" style="color:var(--text-primary)">
+                <div class="stat-val" id="totalHours">0.0</div><div class="stat-lbl">Total Hours</div>
+            </div>
+            <div class="stat-item" style="color:var(--color-yellow)">
+                <div class="stat-val" id="cntSch">0</div><div class="stat-lbl">Schedules</div>
+            </div>
         </div>
     </div>
 
     <div class="card">
-        <div class="section-title">Actual Punch Times</div>
-        <div id="punchHistoryArea" class="history-list">
+        <div class="schedule-title">Add Schedule</div>
+        <div>
+            <div class="date-row">
+                <input type="date" id="schStart" class="ios-input">
+                <input type="date" id="schEnd" class="ios-input">
             </div>
+            <input type="text" id="schText" class="ios-input" placeholder="Event details...">
+            <button class="btn btn-sch" onclick="addSchedule()">Save Event</button>
+            <div style="clear:both;"></div>
+        </div>
     </div>
 
-    <div class="footer">N-4.1 VERSION 27.5 • SYNC SECURED</div>
+    <div class="footer">N-4.2 VERSION 27.6 • SINGLE PUNCH & SCHEDULE</div>
 </div>
 
 <script>
 const CFG = { token: "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", repo: "lishengze-collab/simplify-v18-app", path: "workplace-sync.json", start: "2022/05/04" };
-let db = { punches: {} };
+let db = { punches: {}, schedules: [] }; // 增加 schedules 数组
 let cloudSha = "";
-const LOCAL_KEY = "TDS_V27_4_STORE"; // 保持相同的存储 Key，确保数据不丢失
+const LOCAL_KEY = "TDS_V27_4_STORE"; // 保持绝对一致，保护历史数据
 let currentViewDate = new Date(); 
 
-window.onload = async () => { loadLocal(); initClock(); renderUI(); await pull(); };
+// 固化核心法定节假日 (支持多国同显)
+const HOLIDAYS = {
+    "01-01": ["🇨🇳", "🇺🇸", "🇨🇦"], // 元旦
+    "02-17": ["🇨🇳"], // 春节 (示例2026)
+    "05-01": ["🇨🇳"], // 劳动节
+    "05-25": ["🇺🇸"], // 阵亡将士纪念日 (示例2026)
+    "07-01": ["🇨🇦"], // 加拿大日
+    "07-04": ["🇺🇸"], // 独立日
+    "09-07": ["🇺🇸", "🇨🇦"], // 劳工节 (示例2026)
+    "10-01": ["🇨🇳"], // 国庆节
+    "10-12": ["🇨🇦"], // 感恩节 (CA 示例2026)
+    "11-11": ["🇺🇸", "🇨🇦"], // 老兵节/国殇日
+    "11-26": ["🇺🇸"], // 感恩节 (US 示例2026)
+    "12-25": ["🇺🇸", "🇨🇦"]  // 圣诞节
+};
+
+window.onload = async () => { 
+    initDates(); 
+    loadLocal(); 
+    initClock(); 
+    renderUI(); 
+    await pull(); 
+};
+
+function initDates() {
+    const today = getK(new Date());
+    document.getElementById('schStart').value = today;
+    document.getElementById('schEnd').value = today;
+}
 
 function initClock() { tick(); setInterval(tick, 1000); }
 
 function loadLocal() { 
     const data = localStorage.getItem(LOCAL_KEY); 
-    if(data) db.punches = JSON.parse(data).punches || {}; 
+    if(data) {
+        const parsed = JSON.parse(data);
+        db.punches = parsed.punches || {}; 
+        db.schedules = parsed.schedules || [];
+    }
 }
 
 function save() { 
@@ -178,7 +211,9 @@ async function pull() {
         if(r.ok) { 
             const j = await r.json(); cloudSha = j.sha; 
             const remote = JSON.parse(decodeURIComponent(escape(atob(j.content)))); 
-            db.punches = remote.punches || {}; renderUI();
+            db.punches = remote.punches || {}; 
+            db.schedules = remote.schedules || [];
+            renderUI();
         } 
     } catch(e) {} 
 }
@@ -186,7 +221,7 @@ async function pull() {
 async function push() { 
     try { 
         const content = btoa(unescape(encodeURIComponent(JSON.stringify(db)))); 
-        await fetch(`https://api.github.com/repos/${CFG.repo}/contents/${CFG.path}`, { method: "PUT", headers: { "Authorization": `token ${CFG.token}`, "Content-Type": "application/json" }, body: JSON.stringify({ message: "N-4.1 V27.5 Sync", content, sha: cloudSha }) }); 
+        await fetch(`https://api.github.com/repos/${CFG.repo}/contents/${CFG.path}`, { method: "PUT", headers: { "Authorization": `token ${CFG.token}`, "Content-Type": "application/json" }, body: JSON.stringify({ message: "N-4.2 V27.6 Sync", content, sha: cloudSha }) }); 
     } catch(e) {} 
 }
 
@@ -210,23 +245,22 @@ function tick() {
     
     const k = getK(now);
     const todayData = db.punches[k] || [];
-    document.getElementById('inBtn').disabled = todayData.some(p => p.type === 'IN');
-    document.getElementById('outBtn').disabled = !todayData.some(p => p.type === 'IN') || todayData.some(p => p.type === 'OUT');
+    const hasPunched = todayData.some(p => p.type === 'IN');
+    
+    document.getElementById('inBtn').disabled = hasPunched;
+    document.getElementById('inBtn').innerText = hasPunched ? "Shift Completed" : "Clock In & Complete";
     
     const firstIn = todayData.find(p => p.type === 'IN');
     const estOutEl = document.getElementById('estOut');
     const cdEl = document.getElementById('countdownText');
 
     if(firstIn) {
-        // 计算目标下班时间
         const targetTime = new Date(firstIn.time).getTime() + 8.5 * 60 * 60 * 1000;
         const targetDate = new Date(targetTime);
         
-        // 由于跨时区UI展示，此处用该时间的本地形式呈现(保证格式统一)
         estOutEl.innerText = `${String(targetDate.getHours()).padStart(2,'0')}:${String(targetDate.getMinutes()).padStart(2,'0')}`;
         estOutEl.style.color = 'var(--color-green)';
 
-        // 计算剩余时间
         const remMs = targetTime - now.getTime();
         cdEl.style.display = 'block';
         if(remMs > 0) {
@@ -235,8 +269,8 @@ function tick() {
             cdEl.innerText = `Remaining: ${h}h ${m}m`;
             cdEl.style.color = 'var(--text-secondary)';
         } else {
-            cdEl.innerText = `Shift Completed. Ready to Clock OUT!`;
-            cdEl.style.color = 'var(--color-yellow-text)';
+            cdEl.innerText = `Ready to end shift. Good job!`;
+            cdEl.style.color = 'var(--color-green)';
         }
     } else {
         estOutEl.innerText = "--:--";
@@ -245,20 +279,34 @@ function tick() {
     }
 }
 
-function doPunch(type) { 
+// 核心打卡逻辑更新：仅需要 IN 即可代表一天结束
+function doPunch() { 
     const k = getK(new Date()); 
     if(!db.punches[k]) db.punches[k] = []; 
-    db.punches[k].push({ type, time: Date.now() }); 
-    save(); 
+    // 防止重复打卡
+    if(!db.punches[k].some(p => p.type === 'IN')) {
+        db.punches[k].push({ type: 'IN', time: Date.now() }); 
+        save(); 
+    }
 }
 
-// 统一渲染日历和打卡记录
+function addSchedule() {
+    const s = document.getElementById('schStart').value;
+    const e = document.getElementById('schEnd').value;
+    const txt = document.getElementById('schText').value.trim();
+    if(!s || !e || !txt) return alert("Please fill all schedule fields.");
+    
+    db.schedules.push({ start: s, end: e, text: txt });
+    document.getElementById('schText').value = ""; // 清空文本框
+    save();
+}
+
+function getHolidays(dateStr) {
+    const mmdd = dateStr.substring(5);
+    return HOLIDAYS[mmdd] || [];
+}
+
 function renderUI() {
-    renderCalendar();
-    renderHistory();
-}
-
-function renderCalendar() {
     const grid = document.getElementById('calendarGrid');
     const now = new Date();
     const year = currentViewDate.getFullYear();
@@ -271,91 +319,81 @@ function renderCalendar() {
     const firstDayIndex = new Date(year, month, 1).getDay();
     for(let i=0; i<firstDayIndex; i++) grid.innerHTML += `<div></div>`;
     
-    let totalH = 0, daysW = 0, cBlue = 0, cYellow = 0, cGray = 0;
+    let totalH = 0, daysW = 0, cGray = 0, cSchMonth = 0;
 
     for(let d=1; d<=daysInMonth; d++) {
         const cellDate = new Date(year, month, d);
-        const k = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         const isToday = (d === now.getDate() && month === now.getMonth() && year === now.getFullYear());
         const isPast = (cellDate < new Date().setHours(0,0,0,0));
         const isWeekend = (cellDate.getDay() === 0 || cellDate.getDay() === 6);
 
-        const data = db.punches[k] || [];
+        // 1. 数据解析
+        const data = db.punches[dateStr] || [];
         const hasIn = data.some(p => p.type === 'IN');
-        const hasOut = data.some(p => p.type === 'OUT');
+        const hasOut = data.some(p => p.type === 'OUT'); // 兼容老数据
+        const hasSchedule = db.schedules.some(s => dateStr >= s.start && dateStr <= s.end);
+        const holidaysArray = getHolidays(dateStr);
         
-        let cls = "", hrs = 0;
-        if (hasIn && hasOut) {
-            cls = "status-blue"; cBlue++;
-            hrs = (data.find(p=>p.type==='OUT').time - data.find(p=>p.type==='IN').time) / 3600000;
+        // 2. 状态判定与统计计算
+        let cls = "", inTimeStr = "";
+        
+        if (hasSchedule) cSchMonth++;
+
+        if (hasIn) {
+            cls = "status-blue"; 
             daysW++;
-        } else if (hasIn && !hasOut) {
-            if (isToday) { cls = "today-active"; daysW++; } 
-            else { cls = "status-yellow"; cYellow++; hrs = 8.5; daysW++; }
+            // 向前兼容：有老数据的OUT按实际算，新数据统一加 8.5
+            if(hasOut) {
+                totalH += (data.find(p=>p.type==='OUT').time - data.find(p=>p.type==='IN').time) / 3600000;
+            } else {
+                totalH += 8.5; 
+            }
+            // 获取具体打卡时间 (北京时间显示)
+            const inT = data.find(p=>p.type==='IN').time;
+            inTimeStr = new Date(inT).toLocaleTimeString('en-GB', { timeZone: 'Asia/Shanghai', hour: '2-digit', minute:'2-digit' });
         } else if (!hasIn && isPast && !isWeekend) {
-            cls = "status-gray"; cGray++;
+            cls = "status-gray"; 
+            cGray++;
         }
         
-        totalH += hrs;
+        if(isToday && !hasIn) cls += " today-active";
+
+        // 3. 构建 UI
+        let html = `<div class="date-num">${d}</div>`;
+        if (hasSchedule) html += `<div class="sch-dot"></div>`;
+        if (inTimeStr) html += `<div class="punch-time">${inTimeStr}</div>`;
+        
+        if (holidaysArray.length > 0) {
+            html += `<div class="flags-box">`;
+            holidaysArray.forEach(flag => {
+                html += `<span class="flag-icon">${flag}</span>`;
+            });
+            html += `</div>`;
+        }
+
         const el = document.createElement('div');
-        el.className = `cal-day ${cls}`;
-        el.innerText = d;
-        if(hasIn) el.onclick = () => { if(confirm(`Edit ${k}?`)) adjustTime(k); };
+        el.className = `cal-cell ${cls}`;
+        el.innerHTML = html;
+        
+        // 依然保留手动补签机制
+        if(hasIn) el.onclick = () => { if(confirm(`Adjust punch time for ${dateStr}?`)) adjustTime(dateStr); };
+        
         grid.appendChild(el);
     }
     
+    // 渲染本月统计
     document.getElementById('totalHours').innerText = totalH.toFixed(1);
-    document.getElementById('totalDays').innerText = daysW;
-    document.getElementById('cntBlue').innerText = cBlue;
-    document.getElementById('cntYellow').innerText = cYellow;
+    document.getElementById('cntBlue').innerText = daysW;
     document.getElementById('cntGray').innerText = cGray;
-}
-
-// 渲染真实打卡时间记录
-function renderHistory() {
-    const list = document.getElementById('punchHistoryArea');
-    list.innerHTML = "";
-    
-    // 获取最近的记录（倒序）
-    const keys = Object.keys(db.punches).sort().reverse();
-    if(keys.length === 0) {
-        list.innerHTML = "<div style='text-align:center; color:var(--text-secondary); font-size:12px; padding:10px 0;'>No records yet.</div>";
-        return;
-    }
-
-    // 显示最近的15条记录
-    keys.slice(0, 15).forEach(k => {
-        const data = db.punches[k];
-        const pIn = data.find(x => x.type === 'IN');
-        const pOut = data.find(x => x.type === 'OUT');
-        
-        // 格式化时间为北京时间 (HH:mm)
-        const formatTime = (p) => {
-            if(!p) return `<span class="t-miss">--:--</span>`;
-            return new Date(p.time).toLocaleTimeString('en-GB', { timeZone: 'Asia/Shanghai', hour: '2-digit', minute: '2-digit' });
-        };
-
-        const inStr = formatTime(pIn);
-        const outStr = formatTime(pOut);
-
-        const row = document.createElement('div');
-        row.className = 'hist-row';
-        row.innerHTML = `
-            <div class="hist-date">${k}</div>
-            <div class="hist-times">
-                <span class="t-in">IN: ${inStr}</span>
-                <span class="t-out">OUT: ${outStr}</span>
-            </div>
-        `;
-        list.appendChild(row);
-    });
+    document.getElementById('cntSch').innerText = cSchMonth;
 }
 
 function getK(d) { return d.toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
 
 function adjustTime(k) {
     const p = db.punches[k]; const idx = p.findIndex(x => x.type === 'IN');
-    const val = prompt("New IN time (HH:mm):", "09:30");
+    const val = prompt("Adjust IN time (HH:mm) for " + k + ":", "09:30");
     if(val && val.includes(":")) {
         const [h,m] = val.split(":").map(Number);
         const t = new Date(p[idx].time); t.setHours(h,m,0,0);
